@@ -1,243 +1,355 @@
 /* ============================================
-   storage.js - localStorage 持久化封装 (v4.0 精简版)
-   【v4.0 变更：彻底删除趋势图字段】
-   - 移除: KEY_STATS 中的 accuracyHistory 字段
-   - 移除: addSessionStat() 趋势数据写入逻辑
-   - 简化: getStats() / addSessionStat() 仅保留 totalSessions 计数
-   - 移除: init() 中 accuracyHistory 初始化
-   【v3.0 变更：彻底移除间隔重复全部字段与函数】
-   - 移除: KEY_SPACED / getSpacedData / setSpacedData / updateSpaced / getDueForReview
-   - 移除: submitAnswer 不再调用 updateSpaced
-   - 移除: _incWrongDetail 中 lastReviewTime 字段
-   - 移除: recordAttempt 中 lastReviewTime 默认值
-   【保留功能】
-   - 作答记录 (PREFIX_ANS / PREFIX_OPT)
-   - 错题列表 (KEY_WRONG) + 错题详情 (KEY_WRONG_DETAIL)
-   - 进度管理 (KEY_PROGRESS)
-   - 标签/收藏/笔记 (KEY_QUESTION_META / KEY_TAGS)
-   - 全局统计 (KEY_STATS) 仅保留 totalSessions + totalDone
-   - 用户偏好 (KEY_PREF)
+   storage.js - localStorage 持久化封装 v7.0
+   【v7.0 变更】
+   - 所有读写操作增加 try-catch 异常捕获
+   - JSON 解析容错，损坏数据自动修复
+   - localStorage 不可用时优雅降级到内存存储
    ============================================ */
-const Storage = {
-  PREFIX_ANS:  'eq_a_',
-  PREFIX_OPT:  'eq_o_',
-  KEY_WRONG:         'eq_wrong_list',
-  KEY_WRONG_DETAIL:  'eq_wrong_detail',
-  KEY_PROGRESS:      'eq_progress',
-  KEY_TAGS:          'eq_tags_custom',
-  KEY_QUESTION_META: 'eq_q_meta',
-  KEY_STATS:         'eq_global_stats',
-  KEY_PREF:          'eq_user_pref',
-  // ============ 初始化 (v4.0: 移除 accuracyHistory 初始化) ============
-  init() {
-    if (!localStorage.getItem(this.KEY_TAGS))
-      localStorage.setItem(this.KEY_TAGS, JSON.stringify(['易混淆','死记硬背','高频考点']));
-    if (!localStorage.getItem(this.KEY_STATS))
-      localStorage.setItem(this.KEY_STATS, JSON.stringify({ totalDone:0, totalSessions:0 }));
-    if (!localStorage.getItem(this.KEY_WRONG_DETAIL))
-      localStorage.setItem(this.KEY_WRONG_DETAIL, JSON.stringify({}));
-    if (!localStorage.getItem(this.KEY_QUESTION_META))
-      localStorage.setItem(this.KEY_QUESTION_META, JSON.stringify({}));
-    if (!localStorage.getItem(this.KEY_PREF)) {
-      localStorage.setItem(this.KEY_PREF, JSON.stringify({
-        darkMode: false,
-        hotkeyEnabled: true,
-        autoJumpDelay: 1200,
-        randomOptions: false
-      }));
+const Storage = (function() {
+  'use strict';
+  // ============ 内部内存兜底（localStorage不可用时） ============
+  let _memFallback = {};
+  let _lsAvailable = false;
+  try {
+    const testKey = '__eq_test__';
+    localStorage.setItem(testKey, '1');
+    localStorage.removeItem(testKey);
+    _lsAvailable = true;
+  } catch (e) {
+    _lsAvailable = false;
+    console.warn('[Storage] localStorage 不可用，降级为内存存储（刷新后数据丢失）');
+  }
+  function _get(k) {
+    try {
+      if (_lsAvailable) {
+        const v = localStorage.getItem(k);
+        return v;
+      }
+      return _memFallback[k] || null;
+    } catch (e) { return _memFallback[k] || null; }
+  }
+  function _set(k, v) {
+    try {
+      if (_lsAvailable) { localStorage.setItem(k, v); }
+      else { _memFallback[k] = v; }
+    } catch (e) {
+      _memFallback[k] = v;
+      console.warn('[Storage] 写入失败，使用内存降级:', e.message);
+    }
+  }
+  function _remove(k) {
+    try {
+      if (_lsAvailable) { localStorage.removeItem(k); }
+      else { delete _memFallback[k]; }
+    } catch (e) { delete _memFallback[k]; }
+  }
+  function _jsonGet(k, fallback) {
+    try {
+      const raw = _get(k);
+      if (raw === null || raw === undefined) return fallback;
+      return JSON.parse(raw);
+    } catch (e) {
+      console.warn('[Storage] JSON解析失败，重置为默认值:', k, e.message);
+      _set(k, JSON.stringify(fallback));
+      return fallback;
+    }
+  }
+  function _jsonSet(k, obj) {
+    try { _set(k, JSON.stringify(obj)); }
+    catch (e) { console.warn('[Storage] JSON序列化失败:', e.message); }
+  }
+  // ============ 键名 ============
+  const PREFIX_ANS  = 'eq_a_';
+  const PREFIX_OPT  = 'eq_o_';
+  const KEY_WRONG         = 'eq_wrong_list';
+  const KEY_WRONG_DETAIL  = 'eq_wrong_detail';
+  const KEY_PROGRESS      = 'eq_progress';
+  const KEY_TAGS          = 'eq_tags_custom';
+  const KEY_QUESTION_META = 'eq_q_meta';
+  const KEY_STATS         = 'eq_global_stats';
+  const KEY_PREF          = 'eq_user_pref';
+  const KEY_LAST_REPORT   = 'eq_last_report';
+  // ============ 初始化 ============
+  function init() {
+    if (!_jsonGet(KEY_TAGS, null)) {
+      _jsonSet(KEY_TAGS, ['易混淆', '死记硬背', '高频考点']);
+    }
+    if (!_jsonGet(KEY_STATS, null)) {
+      _jsonSet(KEY_STATS, { totalDone: 0, totalSessions: 0 });
+    }
+    if (!_jsonGet(KEY_WRONG_DETAIL, null)) {
+      _jsonSet(KEY_WRONG_DETAIL, {});
+    }
+    if (!_jsonGet(KEY_QUESTION_META, null)) {
+      _jsonSet(KEY_QUESTION_META, {});
+    }
+    if (!_jsonGet(KEY_PREF, null)) {
+      _jsonSet(KEY_PREF, { darkMode: false, hotkeyEnabled: true, autoJumpDelay: 1200, randomOptions: false });
     }
     // 清理废弃字段
-    const keyToRemove = 'eq_spaced_repeat';
-    if (localStorage.getItem(keyToRemove) !== null) {
-      localStorage.removeItem(keyToRemove);
-    }
-    const pref = this.getPref();
-    let prefChanged = false;
     const deprecatedKeys = [
+      'eq_spaced_repeat',
       'spacedIntensity', 'wrongThreshold', 'insertMode',
       'spacedEnabled', 'preferRecentWrongs', 'preferAllHistoryWrongs'
     ];
-    deprecatedKeys.forEach(k => {
-      if (k in pref) { delete pref[k]; prefChanged = true; }
-    });
-    if (prefChanged) {
-      localStorage.setItem(this.KEY_PREF, JSON.stringify(pref));
+    if (_lsAvailable) {
+      deprecatedKeys.forEach(k => {
+        try { localStorage.removeItem(k); } catch (e) { /* ignore */ }
+      });
+      const pref = getPref();
+      let changed = false;
+      deprecatedKeys.forEach(k => { if (k in pref) { delete pref[k]; changed = true; } });
+      if (changed) _jsonSet(KEY_PREF, pref);
     }
-  },
-  // ===================== 作答记录 =====================
-  saveAnswer(id, value) {
-    localStorage.setItem(this.PREFIX_ANS + id, value);
+  }
+  // ============ 作答记录 ============
+  function saveAnswer(id, value) {
+    if (id === undefined || id === null) return;
+    _set(PREFIX_ANS + id, value || '');
     if (value && value.length) {
-      const key = this.PREFIX_OPT + id;
-      let o = {};
-      try { o = JSON.parse(localStorage.getItem(key)||'{}'); } catch(e){}
-      value.split(',').map(s=>s.trim().toUpperCase()).filter(Boolean).forEach(p=>{ o[p]=(o[p]||0)+1; });
-      localStorage.setItem(key, JSON.stringify(o));
+      const key = PREFIX_OPT + id;
+      let o = _jsonGet(key, {});
+      value.split(',').map(s => s.trim().toUpperCase()).filter(Boolean)
+        .forEach(p => { o[p] = (o[p] || 0) + 1; });
+      _jsonSet(key, o);
     }
-  },
-  getAnswer(id)     { return localStorage.getItem(this.PREFIX_ANS + id); },
-  removeAnswer(id)  { localStorage.removeItem(this.PREFIX_ANS + id); },
-  clearAllAnswers() {
-    for (let i=localStorage.length-1; i>=0; i--) {
-      const k = localStorage.key(i);
-      if (k && (k.startsWith(this.PREFIX_ANS)||k.startsWith(this.PREFIX_OPT)))
-        localStorage.removeItem(k);
+  }
+  function getAnswer(id) { return _get(PREFIX_ANS + id) || ''; }
+  function removeAnswer(id) { _remove(PREFIX_ANS + id); }
+  function clearAllAnswers() {
+    if (_lsAvailable) {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && (k.startsWith(PREFIX_ANS) || k.startsWith(PREFIX_OPT))) {
+          try { localStorage.removeItem(k); } catch (e) { /* ignore */ }
+        }
+      }
+    } else {
+      Object.keys(_memFallback).forEach(k => {
+        if (k.startsWith(PREFIX_ANS) || k.startsWith(PREFIX_OPT)) {
+          delete _memFallback[k];
+        }
+      });
     }
-  },
-  getOptionStats(id) {
-    try { return JSON.parse(localStorage.getItem(this.PREFIX_OPT+id)||'{}'); } catch(e){ return {}; }
-  },
-  // ===================== 题目元数据（标签/收藏/笔记） =====================
-  getQuestionMeta() {
-    try { return JSON.parse(localStorage.getItem(this.KEY_QUESTION_META)||'{}'); } catch(e){ return {}; }
-  },
-  _setMeta(meta) { localStorage.setItem(this.KEY_QUESTION_META, JSON.stringify(meta)); },
-  getQuestionData(id) {
-    const m = this.getQuestionMeta();
+  }
+  function getOptionStats(id) {
+    return _jsonGet(PREFIX_OPT + id, {});
+  }
+  // ============ 题目元数据 ============
+  function getQuestionMeta() { return _jsonGet(KEY_QUESTION_META, {}); }
+  function getQuestionData(id) {
+    const m = getQuestionMeta();
     const k = String(id);
-    return m[k] || { tags:[], collect:false, note:'' };
-  },
-  setQuestionData(id, data) {
-    const m = this.getQuestionMeta();
+    return m[k] || { tags: [], collect: false, note: '' };
+  }
+  function setQuestionData(id, data) {
+    const m = getQuestionMeta();
     const k = String(id);
-    if (!m[k]) m[k] = { tags:[], collect:false, note:'' };
+    if (!m[k]) m[k] = { tags: [], collect: false, note: '' };
     Object.assign(m[k], data);
-    this._setMeta(m);
-  },
-  toggleTag(id, tag) {
-    const m = this.getQuestionMeta();
+    _jsonSet(KEY_QUESTION_META, m);
+  }
+  function toggleTag(id, tag) {
+    const m = getQuestionMeta();
     const k = String(id);
-    if (!m[k]) m[k] = { tags:[], collect:false, note:'' };
+    if (!m[k]) m[k] = { tags: [], collect: false, note: '' };
     const idx = m[k].tags.indexOf(tag);
-    idx>=0 ? m[k].tags.splice(idx,1) : m[k].tags.push(tag);
-    this._setMeta(m);
+    if (idx >= 0) m[k].tags.splice(idx, 1);
+    else m[k].tags.push(tag);
+    _jsonSet(KEY_QUESTION_META, m);
     return m[k].tags;
-  },
-  toggleCollect(id) {
-    const m = this.getQuestionMeta();
+  }
+  function toggleCollect(id) {
+    const m = getQuestionMeta();
     const k = String(id);
-    if (!m[k]) m[k] = { tags:[], collect:false, note:'' };
+    if (!m[k]) m[k] = { tags: [], collect: false, note: '' };
     m[k].collect = !m[k].collect;
-    this._setMeta(m);
+    _jsonSet(KEY_QUESTION_META, m);
     return m[k].collect;
-  },
-  saveNote(id, note) {
-    const m = this.getQuestionMeta();
+  }
+  function saveNote(id, note) {
+    const m = getQuestionMeta();
     const k = String(id);
-    if (!m[k]) m[k] = { tags:[], collect:false, note:'' };
-    m[k].note = note;
-    this._setMeta(m);
-  },
-  // ===================== 错题管理 =====================
-  getWrongList() {
-    try { return JSON.parse(localStorage.getItem(this.KEY_WRONG)||'[]'); } catch(e){ return []; }
-  },
-  _setWrongList(list) { localStorage.setItem(this.KEY_WRONG, JSON.stringify(list)); },
-  addWrong(id) {
-    const list = this.getWrongList();
-    if (!list.includes(id)) { list.push(id); this._setWrongList(list); }
-    this._incWrongDetail(id);
-  },
-  removeWrong(id) {
-    const list = this.getWrongList().filter(w=>w!==id);
-    this._setWrongList(list);
-  },
-  clearAllWrong() {
-    localStorage.removeItem(this.KEY_WRONG);
-    localStorage.removeItem(this.KEY_WRONG_DETAIL);
-    localStorage.removeItem('eq_spaced_repeat');
-  },
-  getWrongDetail() {
-    try { return JSON.parse(localStorage.getItem(this.KEY_WRONG_DETAIL)||'{}'); } catch(e){ return {}; }
-  },
-  _incWrongDetail(id) {
-    const d = this.getWrongDetail();
-    if (!d[id]) d[id] = { totalAttempts:0, wrongCount:0, lastWrongTime:0, wrongRate:0 };
+    if (!m[k]) m[k] = { tags: [], collect: false, note: '' };
+    m[k].note = note || '';
+    _jsonSet(KEY_QUESTION_META, m);
+  }
+  // ============ 错题管理 ============
+  function getWrongList() { return _jsonGet(KEY_WRONG, []); }
+  function addWrong(id) {
+    const list = getWrongList();
+    if (!list.includes(id)) { list.push(id); _jsonSet(KEY_WRONG, list); }
+    _incWrongDetail(id);
+  }
+  function removeWrong(id) {
+    const list = getWrongList().filter(w => w !== id);
+    _jsonSet(KEY_WRONG, list);
+  }
+  function clearAllWrong() {
+    _remove(KEY_WRONG);
+    _remove(KEY_WRONG_DETAIL);
+  }
+  function getWrongDetail() { return _jsonGet(KEY_WRONG_DETAIL, {}); }
+  function _incWrongDetail(id) {
+    const d = getWrongDetail();
+    if (!d[id]) d[id] = { totalAttempts: 0, wrongCount: 0, lastWrongTime: 0, wrongRate: 0 };
     d[id].wrongCount++;
     d[id].lastWrongTime = Date.now();
-    if (d[id].totalAttempts>0) d[id].wrongRate = Number((d[id].wrongCount/d[id].totalAttempts).toFixed(4));
-    localStorage.setItem(this.KEY_WRONG_DETAIL, JSON.stringify(d));
-  },
-  recordAttempt(id, isCorrect) {
-    const d = this.getWrongDetail();
-    if (!d[id]) d[id] = { totalAttempts:0, wrongCount:0, lastWrongTime:0, wrongRate:0 };
+    if (d[id].totalAttempts > 0) d[id].wrongRate = Number((d[id].wrongCount / d[id].totalAttempts).toFixed(4));
+    _jsonSet(KEY_WRONG_DETAIL, d);
+  }
+  function recordAttempt(id, isCorrect) {
+    const d = getWrongDetail();
+    if (!d[id]) d[id] = { totalAttempts: 0, wrongCount: 0, lastWrongTime: 0, wrongRate: 0 };
     d[id].totalAttempts++;
-    d[id].wrongRate = Number((d[id].wrongCount/d[id].totalAttempts).toFixed(4));
-    localStorage.setItem(this.KEY_WRONG_DETAIL, JSON.stringify(d));
-  },
-  // ===================== 进度管理 =====================
-  saveProgress(data)   { localStorage.setItem(this.KEY_PROGRESS, JSON.stringify(data)); },
-  getProgress()        { try { return JSON.parse(localStorage.getItem(this.KEY_PROGRESS)||'{}'); } catch(e){ return {}; } },
-  clearProgress()      { localStorage.removeItem(this.KEY_PROGRESS); },
-  // ===================== 标签库 =====================
-  getTags() {
-    try { return JSON.parse(localStorage.getItem(this.KEY_TAGS)||'[]'); } catch(e){ return ['易混淆','死记硬背','高频考点']; }
-  },
-  addTag(tag) {
-    let ts = this.getTags();
-    if (!ts.includes(tag)) { ts.push(tag); localStorage.setItem(this.KEY_TAGS, JSON.stringify(ts)); }
+    d[id].wrongRate = Number((d[id].wrongCount / d[id].totalAttempts).toFixed(4));
+    _jsonSet(KEY_WRONG_DETAIL, d);
+  }
+  // ============ 进度管理 ============
+  function saveProgress(data) { _jsonSet(KEY_PROGRESS, data); }
+  function getProgress() { return _jsonGet(KEY_PROGRESS, {}); }
+  function clearProgress() { _remove(KEY_PROGRESS); }
+  // ============ 标签库 ============
+  function getTags() { return _jsonGet(KEY_TAGS, ['易混淆', '死记硬背', '高频考点']); }
+  function addTag(tag) {
+    let ts = getTags();
+    if (!ts.includes(tag)) { ts.push(tag); _jsonSet(KEY_TAGS, ts); }
     return ts;
-  },
-  removeTag(tag) {
-    let ts = this.getTags().filter(t=>t!==tag);
-    localStorage.setItem(this.KEY_TAGS, JSON.stringify(ts));
-    return ts;
-  },
-  // ===================== 用户偏好 =====================
-  getPref() {
-    try { return JSON.parse(localStorage.getItem(this.KEY_PREF)||'{}'); } catch(e){ return {}; }
-  },
-  setPref(obj) {
-    const cur = this.getPref();
+  }
+  // ============ 用户偏好 ============
+  function getPref() { return _jsonGet(KEY_PREF, {}); }
+  function setPref(obj) {
+    const cur = getPref();
     Object.assign(cur, obj);
-    localStorage.setItem(this.KEY_PREF, JSON.stringify(cur));
-  },
-  // ===================== 全局统计 (v4.0: 移除 accuracyHistory) =====================
-  getStats() {
-    try { return JSON.parse(localStorage.getItem(this.KEY_STATS)||'{}'); } catch(e){ return {}; }
-  },
-  /** v4.0: 仅更新 totalSessions + totalDone，不再记录趋势数据 */
-  addSessionStat(/* accuracy, total, correct, wrong */) {
-    let s = this.getStats();
-    s.totalSessions = (s.totalSessions||0)+1;
+    _jsonSet(KEY_PREF, cur);
+  }
+  // ============ 全局统计 ============
+  function getStats() { return _jsonGet(KEY_STATS, { totalDone: 0, totalSessions: 0 }); }
+  function addSessionStat() {
+    const s = getStats();
+    s.totalSessions = (s.totalSessions || 0) + 1;
     s.totalDone = 0;
-    questionList.forEach(q=>{ if (this.getAnswer(q.id)) s.totalDone++; });
-    localStorage.setItem(this.KEY_STATS, JSON.stringify(s));
-  },
-  // ===================== 答案判定 =====================
-  checkCorrect(id, userAns) {
-    const q = questionList.find(it=>it.id===id);
-    if (!q||!userAns) return false;
-    const ref = q.answer;
-    switch(q.type) {
-      case 'radio': case 'judge':
-        return userAns.trim().toUpperCase() === ref.trim().toUpperCase();
+    if (typeof questionList !== 'undefined' && questionList) {
+      questionList.forEach(q => { if (getAnswer(q.id)) s.totalDone++; });
+    }
+    _jsonSet(KEY_STATS, s);
+  }
+  // ============ 最后一期报告 ============
+  function saveLastReport(data) { _jsonSet(KEY_LAST_REPORT, data); }
+  function getLastReport() { return _jsonGet(KEY_LAST_REPORT, null); }
+  // ============ v7.0 答案判定：统一预处理 ============
+  /**
+   * 规范化答案字符串：去除前后空格、统一大写
+   * @param {string} s
+   * @returns {string}
+   */
+  function normalize(s) {
+    if (typeof s !== 'string') return '';
+    return s.trim().toUpperCase();
+  }
+  /**
+   * 多选题计分规则 v7.0
+   * - 全选正确：得分 (isExactlyCorrect = true)
+   * - 部分正确但无错误：partialCorrect
+   * - 有错选或漏选：错误
+   * @param {string} id
+   * @param {string} userAns
+   * @returns {{ isExactlyCorrect: boolean, isPartialCorrect: boolean, isWrong: boolean }}
+   */
+  function checkCorrectMulti(id, userAns) {
+    const q = (typeof questionList !== 'undefined' && questionList)
+      ? questionList.find(it => it && it.id === id) : null;
+    if (!q || !userAns) return { isExactlyCorrect: false, isPartialCorrect: false, isWrong: true };
+    const ref = normalize(q.answer || '');
+    const usr = normalize(userAns);
+    const refSet = new Set(ref.split(',').map(s => s.trim()).filter(Boolean));
+    const usrSet = new Set(usr.split(',').map(s => s.trim()).filter(Boolean));
+    if (refSet.size === 0) return { isExactlyCorrect: false, isPartialCorrect: false, isWrong: true };
+    // 检查是否有错误选项（用户选了参考答案中没有的）
+    let hasWrong = false;
+    for (const u of usrSet) {
+      if (!refSet.has(u)) { hasWrong = true; break; }
+    }
+    // 检查是否全对
+    let allCorrect = true;
+    if (usrSet.size !== refSet.size) allCorrect = false;
+    if (allCorrect) {
+      for (const r of refSet) { if (!usrSet.has(r)) { allCorrect = false; break; } }
+    }
+    if (allCorrect && !hasWrong) {
+      return { isExactlyCorrect: true, isPartialCorrect: false, isWrong: false };
+    }
+    // 部分正确（无错选，但漏选）
+    if (!hasWrong && usrSet.size > 0) {
+      return { isExactlyCorrect: false, isPartialCorrect: true, isWrong: false };
+    }
+    return { isExactlyCorrect: false, isPartialCorrect: false, isWrong: true };
+  }
+  /**
+   * 通用答案判定（保持向后兼容）
+   * @param {string} id
+   * @param {string} userAns
+   * @returns {boolean}
+   */
+  function checkCorrect(id, userAns) {
+    const q = (typeof questionList !== 'undefined' && questionList)
+      ? questionList.find(it => it && it.id === id) : null;
+    if (!q || !userAns) return false;
+    const ref = normalize(q.answer || '');
+    const usr = normalize(userAns);
+    switch (q.type) {
+      case 'radio':
+      case 'judge':
+        return usr === ref;
       case 'checkbox': {
-        const u=new Set(userAns.split(',').map(s=>s.trim().toUpperCase()).filter(Boolean));
-        const r=new Set(ref.split(',').map(s=>s.trim().toUpperCase()).filter(Boolean));
-        if (u.size!==r.size) return false;
-        for (const v of u) if(!r.has(v)) return false;
-        return true;
+        const result = checkCorrectMulti(id, userAns);
+        return result.isExactlyCorrect;
       }
       case 'fill': {
-        const ul = userAns.trim().toLowerCase();
-        const refs=ref.split('、').map(s=>s.trim().toLowerCase()).filter(Boolean);
-        const ups =userAns.split(/[、,]/).map(s=>s.trim().toLowerCase()).filter(Boolean);
-        if (refs.length===1) return ul.includes(refs[0]);
-        if (ups.length<refs.length) return false;
-        for (let i=0;i<refs.length;i++) if(!ups[i]||!ups[i].includes(refs[i])) return false;
+        const refs = (q.answer || '').split('、').map(s => normalize(s)).filter(Boolean);
+        const ups = userAns.split(/[、,]/).map(s => normalize(s)).filter(Boolean);
+        if (refs.length === 1) return usr.includes(refs[0]);
+        if (ups.length < refs.length) return false;
+        for (let i = 0; i < refs.length; i++) {
+          if (!ups[i] || !ups[i].includes(refs[i])) return false;
+        }
         return true;
       }
     }
     return false;
-  },
-  submitAnswer(id, userAns) {
-    if (!userAns) return { correct: false };
-    this.saveAnswer(id, userAns);
-    const correct = this.checkCorrect(id, userAns);
-    this.recordAttempt(id, correct);
-    if (correct) this.removeWrong(id);
-    else this.addWrong(id);
-    return { correct };
   }
-};
+  /** 完整答题流程 */
+  function submitAnswer(id, userAns) {
+    if (!userAns || id === undefined || id === null) return { correct: false, multi: null };
+    saveAnswer(id, userAns);
+    const q = (typeof questionList !== 'undefined' && questionList)
+      ? questionList.find(it => it && it.id === id) : null;
+    const correct = checkCorrect(id, userAns);
+    recordAttempt(id, correct);
+    if (correct) { removeWrong(id); }
+    else { addWrong(id); }
+    // 多选题详细结果
+    let multi = null;
+    if (q && q.type === 'checkbox') {
+      multi = checkCorrectMulti(id, userAns);
+    }
+    return { correct, multi };
+  }
+  // ============ 公开 API ============
+  return {
+    init,
+    saveAnswer, getAnswer, removeAnswer, clearAllAnswers, getOptionStats,
+    getQuestionMeta, getQuestionData, setQuestionData,
+    toggleTag, toggleCollect, saveNote,
+    getWrongList, addWrong, removeWrong, clearAllWrong,
+    getWrongDetail, recordAttempt,
+    saveProgress, getProgress, clearProgress,
+    getTags, addTag,
+    getPref, setPref,
+    getStats, addSessionStat,
+    saveLastReport, getLastReport,
+    checkCorrect, checkCorrectMulti, submitAnswer,
+    normalize,
+    get lsAvailable() { return _lsAvailable; }
+  };
+})();

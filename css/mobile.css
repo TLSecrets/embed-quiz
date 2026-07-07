@@ -1,0 +1,45 @@
+/* ============================================
+   embed-quiz v7.0 - 移动端弹性布局
+   覆盖临界尺寸，确保手势友好、触控适配
+   ============================================ */
+@media (max-width: 768px) {
+  html{font-size:15px}
+  .eq-container, .container{padding:10px 8px 30px}
+  .eq-header, .header{padding:16px 8px 10px}
+  .eq-header h1, .header h1{font-size:1.25rem}
+  .eq-toolbar, .toolbar{flex-direction:column;align-items:stretch;gap:6px;padding:8px 0;position:sticky;top:0}
+  .eq-toolbar .eq-tool-actions, .toolbar .tool-actions{margin-left:0;justify-content:flex-start;flex-wrap:wrap;gap:6px}
+  .eq-q-card, .q-card{padding:14px 12px;min-height:120px}
+  .eq-opt-item, .opt-item{padding:8px 10px;gap:8px}
+  .eq-opt-letter, .opt-letter{min-width:20px;font-size:.82rem}
+  .eq-opt-text, .opt-text{font-size:.82rem}
+  .eq-judge-btn, .judge-btn{padding:10px;font-size:.88rem}
+  .eq-nav-row, .nav-row{flex-wrap:wrap;gap:6px}
+  .eq-nav-info, .nav-info{margin-left:0;width:100%;text-align:center}
+  .eq-stat-grid, .stat-grid{grid-template-columns:repeat(3,1fr)}
+  .eq-type-grid, .type-grid{grid-template-columns:repeat(2,1fr)}
+  .eq-sheet-item, .sheet-item{width:28px;height:28px;font-size:.65rem}
+  .eq-btn, .btn{padding:8px 14px;font-size:.82rem}
+  .eq-modal-box, .modal-box{max-width:95%;padding:18px}
+  .eq-dark-toggle, .dark-toggle{bottom:14px;right:14px;width:40px;height:40px}
+  .eq-filter-group, .filter-group{flex-wrap:wrap}
+  .eq-type-btn, .eq-mode-tab, .filter-btn{padding:4px 10px;font-size:.72rem}
+  .eq-q-title, .q-title{font-size:.88rem}
+  .eq-wrong-item, .wrong-item{flex-direction:column;align-items:flex-start;gap:4px}
+  .eq-wi-title, .wrong-item .wi-title{white-space:normal}
+}
+@media (max-width: 480px) {
+  html{font-size:14px}
+  .eq-container, .container{padding:8px 6px 24px}
+  .eq-header, .header{padding:12px 6px 8px}
+  .eq-header h1, .header h1{font-size:1.15rem}
+  .eq-stat-grid, .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .eq-type-grid, .type-grid{grid-template-columns:1fr 1fr}
+  .eq-q-card, .q-card{padding:10px 8px}
+  .eq-options-list, .options-list{gap:5px}
+  .eq-opt-item, .opt-item{padding:6px 8px;gap:6px}
+  .eq-nav-row, .nav-row{gap:4px}
+  .eq-btn-sm, .btn-sm{padding:5px 10px;font-size:.72rem}
+  .eq-score-value{font-size:1.5rem}
+  .eq-score-circle{width:120px;height:120px}
+}

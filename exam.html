@@ -5,734 +5,100 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>刷题 - 嵌入式应用开发</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/mobile.css">
 </head>
 <body>
-  <div class="container">
-    <header class="header" style="padding-bottom:8px;">
+  <div class="eq-container">
+    <header class="eq-header" style="padding-bottom:8px;">
       <h1>📝 刷题</h1>
-      <p class="subtitle" id="subtitle">加载中...</p>
+      <p class="eq-subtitle" id="subtitle">加载中...</p>
     </header>
-    <!-- 进度条 + 实时统计 -->
-    <div class="progress-bar"><div class="fill" id="progFill" style="width:0%"></div></div>
-    <div class="progress-text">
-      <span id="progText">0/0</span>
-      <span id="progDetail">✔0 ✘0</span>
-      <span id="progAcc">正确率: -</span>
+    <!-- 进度条 + 统计 -->
+    <div class="eq-progress-bar"><div class="eq-progress-fill" id="eqProgressBar" style="width:0%"></div></div>
+    <div class="eq-progress-text">
+      <span id="eqProgressText">0/0</span>
+      <span id="eqTopStats">✅ 0 | ❌ 0 | 📊 0/0</span>
     </div>
     <!-- 工具栏 -->
-    <div class="toolbar">
-      <div class="filter-group" id="filterGroup">
-        <button class="filter-btn active" data-type="all">全部</button>
-        <button class="filter-btn" data-type="radio">单选</button>
-        <button class="filter-btn" data-type="checkbox">多选</button>
-        <button class="filter-btn" data-type="fill">填空</button>
-        <button class="filter-btn" data-type="judge">判断</button>
+    <div class="eq-toolbar">
+      <div class="eq-filter-group" id="filterGroup">
+        <button class="eq-type-btn active" data-type="all">全部</button>
+        <button class="eq-type-btn" data-type="radio">单选</button>
+        <button class="eq-type-btn" data-type="checkbox">多选</button>
+        <button class="eq-type-btn" data-type="fill">填空</button>
+        <button class="eq-type-btn" data-type="judge">判断</button>
       </div>
-      <div class="tool-actions">
-        <label style="font-size:.78rem;">题量
-          <input type="number" class="inline-input" id="customCount" value="0" min="0" max="167"
-                 onchange="setCustomCount()" title="0=全部">
+      <div class="eq-tool-actions">
+        <label class="eq-toggle-label">题量
+          <input type="number" class="eq-inline-input" id="customCount" value="0" min="0" max="167" onchange="setCustomCount()" title="0=全部">
         </label>
-        <label class="toggle-label">
+        <label class="eq-toggle-label">
           <input type="checkbox" id="randomToggle" onchange="toggleRandom()"> 随机
         </label>
-        <label class="toggle-label" title="打乱每道题的A/B/C/D选项展示顺序">
+        <label class="eq-toggle-label" title="打乱每道题的A/B/C/D选项展示顺序">
           <input type="checkbox" id="optRandomToggle" onchange="toggleOptRandom()"> 🔀随机选项
         </label>
-        <select id="modeSelect" onchange="switchMode(this.value)"
-                style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.78rem;">
-          <option value="normal">常规刷题</option>
-          <option value="review">背题浏览</option>
-          <option value="exam">模拟考试</option>
-          <option value="wrong">错题训练</option>
-        </select>
-        <a href="index.html" class="btn btn-secondary btn-sm">🏠</a>
+        <button class="eq-mode-tab active" data-mode="normal">常规</button>
+        <button class="eq-mode-tab" data-mode="review">背题</button>
+        <button class="eq-mode-tab" data-mode="exam">考试</button>
+        <a href="index.html" class="eq-btn eq-btn-secondary eq-btn-sm">🏠</a>
       </div>
     </div>
     <!-- 答题卡缩略图 -->
-    <div class="sheet-grid" id="sheetGrid"></div>
+    <div class="eq-sheet-grid" id="eqSheetGrid"></div>
     <!-- 题目卡片 -->
-    <div class="q-card" id="qCard">
-      <div class="q-header">
-        <span class="q-badge" id="qBadge">单选题</span>
-        <span class="q-id" id="qId">#1</span>
+    <div class="eq-q-card" id="qCard">
+      <div class="eq-q-header">
+        <span id="eqQuestionTitle">
+          <span class="eq-q-index"></span>
+          <span class="eq-q-type"></span>
+          <span class="eq-q-text"></span>
+        </span>
       </div>
-      <div class="q-title" id="qTitle"></div>
-      <div class="q-img-wrap">
-        <img id="qImg" src="" alt="" style="display:none;">
+      <div class="eq-q-img-wrap" id="eqQuestionImgWrap" style="display:none;">
+        <img id="eqQuestionImg" src="" alt="" style="display:none;">
       </div>
-      <div id="qAnswerArea"></div>
-      <!-- 解析区（常规/背题/错题模式显示，考试模式隐藏） -->
-      <div class="answer-box" id="answerBox" style="display:none;"></div>
+      <div id="eqAnswerArea"></div>
+      <!-- 答案面板 -->
+      <div class="eq-answer-box" id="eqAnswerBox" style="display:none;"></div>
       <!-- 笔记 + 标签 + 收藏 -->
-      <div id="noteTagArea" style="display:none;">
-        <div class="note-area">
-          <textarea id="noteInput" placeholder="📝 添加个人笔记..." onblur="saveNote()"></textarea>
-        </div>
-        <div class="tag-area" id="tagArea"></div>
-      </div>
+      <div id="eqNoteTag" style="display:none;"></div>
     </div>
     <!-- 导航按钮 -->
-    <div class="nav-row">
-      <button class="btn btn-secondary btn-sm" onclick="prevQ()">⬅ 上一题</button>
-      <button class="btn btn-secondary btn-sm" onclick="nextQ()">下一题 ➡</button>
-      <button class="btn btn-secondary btn-sm" id="btnToggleAns" onclick="toggleAnswer()" style="display:none;">👁 显示答案</button>
-      <button class="btn btn-danger btn-sm" id="btnFinishExam" onclick="finishExam()" style="display:none;">📊 交卷</button>
-      <button class="btn btn-warning btn-sm" id="btnRedo" onclick="redoSession()" title="清空本次练习所有作答记录，重新开始">🔄 重做本次练习</button>
-      <span class="nav-info" id="navInfo"></span>
+    <div class="eq-nav-row">
+      <button class="eq-btn eq-btn-secondary eq-btn-sm" id="eqBtnPrev">⬅ 上一题</button>
+      <button class="eq-btn eq-btn-secondary eq-btn-sm" id="eqBtnNext">下一题 ➡</button>
+      <button class="eq-btn eq-btn-danger eq-btn-sm eq-exam-only" id="eqBtnSubmitExam" style="display:none;">📊 交卷</button>
+      <button class="eq-btn eq-btn-warn eq-btn-sm eq-non-exam" id="eqBtnRedo">🔄 重做本次练习</button>
+      <button class="eq-btn eq-btn-secondary eq-btn-sm" id="eqBtnClearProgress">🗑️ 清空进度</button>
+      <span class="eq-nav-info" id="navInfo"></span>
     </div>
-    <footer class="footer"><p>⌨️ 快捷键: 1-4选ABCD，←→翻题，Enter下一题</p></footer>
+    <footer class="eq-footer"><p>⌨️ 快捷键: 1-4选ABCD，←→翻题，Enter下一题</p></footer>
   </div>
-  <!-- 考试完成弹窗 -->
-  <div class="modal-overlay" id="examResultModal" style="display:none;">
-    <div class="modal-box">
+  <!-- 考试报告弹窗 -->
+  <div class="eq-modal-overlay" id="eqExamReport" style="display:none;">
+    <div class="eq-modal-box" style="text-align:center;">
       <h3>📊 考试完成</h3>
-      <p id="examResultText"></p>
-      <div class="modal-actions">
-        <button class="btn btn-secondary btn-sm" onclick="closeExamResult()">关闭</button>
-        <a href="report.html" class="btn btn-primary btn-sm" id="btnGoReport">查看详细报告</a>
+      <div class="eq-exam-score" id="eqExamScore">0</div>
+      <div style="font-size:.88rem;">分</div>
+      <div class="eq-exam-detail" id="eqExamDetail"></div>
+      <div class="eq-modal-actions" style="justify-content:center;">
+        <button class="eq-btn eq-btn-secondary eq-btn-sm" id="eqBtnCloseReport">查看错题</button>
+        <a href="report.html" class="eq-btn eq-btn-primary eq-btn-sm">查看详细报告</a>
       </div>
     </div>
   </div>
-  <!-- 重做确认弹窗 -->
-  <div class="modal-overlay" id="redoConfirmModal" style="display:none;">
-    <div class="modal-box">
-      <h3>⚠️ 确认重做</h3>
-      <p id="redoConfirmText">将清空本次练习的全部作答记录（不影响其他模式的答题记录），并回到第一题重新开始。此操作不可撤销，确定继续？</p>
-      <div class="modal-actions">
-        <button class="btn btn-secondary btn-sm" onclick="closeRedoConfirm()">取消</button>
-        <button class="btn btn-danger btn-sm" id="btnRedoConfirm" onclick="doRedoSession()">确认重做</button>
-      </div>
-    </div>
-  </div>
+  <!-- ====== JS 模块：严格按依赖顺序加载 ====== -->
   <script src="js/question.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/timer.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/common.js"></script>
-  <script src="js/hotkey.js"></script>
+  <script src="js/picker.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/app.js"></script>
   <script src="js/darkmode.js"></script>
-  <script>
-    /* =================================================================
-     *  exam.html v6.0
-     *  【v6.0 变更】
-     *  1. 离开页面自动清除本次练习作答（beforeunload）
-     *  2. 错题训练模式不再自动填入历史错误答案——clean start
-     *  3. 最后一题答对/答错后自动生成报告并跳转 report.html（考试模式除外）
-     *  【v5.0 核心修复】
-     *  - 选项双向映射（formatAnswerMapped / formatUserAnsMapped）
-     *  - 重做本次练习按钮
-     * ================================================================= */
-    Storage.init();
-    DarkMode.init();
-    Hotkey.init();
-    /* ========== 全局状态 ========== */
-    let qIndex = 0;
-    let qList = [];
-    let filterType = 'all';
-    let randomMode = false;
-    let currentMode = 'normal';       // normal | review | exam | wrong
-    let showAnswer = false;
-    let examFinished = false;
-    let examStartTime = 0;
-    let examUserAnswers = {};
-    let currentOptMapping = null;
-    let autoJumpTimer = null;
-    let sessionStats = { done: 0, correct: 0, wrong: 0 };
-    /* ===== 选项打乱缓存 ===== */
-    let shuffledCache = new Map();
-    function getShuffledForQ(q) {
-      if (!q) return null;
-      if (shuffledCache.has(q.id)) {
-        return shuffledCache.get(q.id);
-      }
-      const shuffled = App.shuffleOptionsIfEnabled(q);
-      shuffledCache.set(q.id, shuffled);
-      return shuffled;
-    }
-    /* ========== URL 参数恢复 ========== */
-    (function() {
-      const p = new URLSearchParams(location.search);
-      if (p.get('type')) filterType = p.get('type');
-      if (p.get('random') === '1') randomMode = true;
-      if (p.get('mode')) currentMode = p.get('mode');
-      document.getElementById('modeSelect').value = currentMode;
-      const pref = Storage.getPref();
-      if (pref.randomOptions) {
-        document.getElementById('optRandomToggle').checked = true;
-      }
-      document.getElementById('randomToggle').checked = randomMode;
-      document.querySelectorAll('.filter-btn').forEach(b =>
-        b.classList.toggle('active', b.dataset.type === filterType)
-      );
-      const prog = Storage.getProgress();
-      if (prog.filterType === filterType && prog.mode === currentMode && prog.index !== undefined && prog.index < 167) {
-        qIndex = prog.index;
-      }
-    })();
-    /* =================================================================
-     *  buildList() v6.0
-     * ================================================================= */
-    function buildList() {
-      let list = App.filterQuestions(filterType);
-      if (randomMode) list = App.shuffle(list);
-      const cnt = parseInt(document.getElementById('customCount').value) || 0;
-      if (cnt > 0 && cnt < list.length) list = list.slice(0, cnt);
-      if (currentMode === 'wrong') {
-        const wids = Storage.getWrongList().filter(id => {
-          const q = questionList.find(qq => qq.id === id);
-          return q && (filterType === 'all' || q.type === filterType);
-        });
-        list = wids.map(id => questionList.find(q => q.id === id)).filter(Boolean);
-        if (randomMode) list = App.shuffle(list);
-      }
-      qList = list;
-      shuffledCache = new Map();
-      if (qIndex >= qList.length) qIndex = 0;
-      if (qList.length === 0) qIndex = 0;
-    }
-    /* =================================================================
-     *  render() v6.0
-     * ================================================================= */
-    function render() {
-      clearAutoJump();
-      if (qList.length === 0) {
-        document.getElementById('qCard').innerHTML =
-          '<div class="empty"><div class="empty-icon">📭</div><p>暂无题目</p></div>';
-        document.getElementById('subtitle').textContent = '没有匹配的题目';
-        updateStats();
-        return;
-      }
-      const q = qList[qIndex];
-      const modeNames = { normal: '常规刷题', review: '背题浏览', exam: '模拟考试', wrong: '错题训练' };
-      document.getElementById('subtitle').textContent =
-        App.getTypeName(filterType) + ' · ' + qList.length + '题 · ' + (modeNames[currentMode] || currentMode);
-      document.getElementById('qBadge').textContent = App.getTypeName(q.type);
-      document.getElementById('qId').textContent = '#' + q.id;
-      document.getElementById('qTitle').textContent = q.title;
-      App.setImageSrc(document.getElementById('qImg'), q.img);
-      const shuffled = getShuffledForQ(q);
-      currentOptMapping = shuffled;
-      renderAnswerArea(q, shuffled);
-      renderAnswerBox(q);
-      renderNoteTag(q);
-      updateHighlight(q);
-      document.getElementById('navInfo').textContent = (qIndex + 1) + ' / ' + qList.length;
-      document.getElementById('progFill').style.width =
-        (qList.length > 0 ? ((qIndex + 1) / qList.length * 100) : 0) + '%';
-      updateStats();
-      renderSheet();
-      Storage.saveProgress({
-        filterType, mode: currentMode, index: qIndex, random: randomMode
-      });
-      // 模式 UI 控制
-      if (currentMode === 'exam') {
-        document.getElementById('btnToggleAns').style.display = 'none';
-        document.getElementById('btnFinishExam').style.display = 'inline-block';
-        document.getElementById('noteTagArea').style.display = 'none';
-        document.getElementById('btnRedo').style.display = 'none';
-        showAnswer = false;
-      } else {
-        document.getElementById('btnToggleAns').style.display = 'inline-block';
-        document.getElementById('btnFinishExam').style.display = 'none';
-        document.getElementById('noteTagArea').style.display = 'block';
-        document.getElementById('btnRedo').style.display = 'inline-block';
-        if (currentMode === 'review') {
-          showAnswer = true;
-          document.getElementById('btnToggleAns').textContent = '🙈 隐藏答案';
-          document.getElementById('answerBox').style.display = 'block';
-        }
-        if (currentMode === 'wrong' && showAnswer) {
-          document.getElementById('btnToggleAns').textContent = '🙈 隐藏答案';
-        }
-        if (currentMode === 'normal' && !showAnswer) {
-          document.getElementById('btnToggleAns').textContent = '👁 显示答案';
-          document.getElementById('answerBox').style.display = 'none';
-        }
-      }
-    }
-    /* =================================================================
-     *  renderAnswerArea() v6.0
-     *  【v6.0 变更】错题训练模式不再预填历史错误答案，强制 clean start
-     *    用户看到的选项全部未选中，就像第一次做题。
-     *    但 Storage 中的历史记录仍然保留，提交新答案时会覆盖并自动判分。
-     * ================================================================= */
-    function renderAnswerArea(q, shuffled) {
-      const area = document.getElementById('qAnswerArea');
-      let userAns = '';
-      if (currentMode === 'exam') {
-        userAns = examUserAnswers[q.id] || '';
-      } else if (currentMode !== 'wrong') {
-        // 非错题模式：从 Storage 读取历史答案
-        userAns = Storage.getAnswer(q.id) || '';
-      }
-      // 【v6.0】错题模式强制 clean start：userAns 保持空字符串，不预选任何选项
-      const mapping = shuffled.mapping || {};
-      area.innerHTML = '';
-      switch (q.type) {
-        case 'radio': {
-          const mappedAns = mapping[userAns] || userAns;
-          let html = '<ul class="options-list">';
-          shuffled.options.forEach((opt, i) => {
-            const label = shuffled.labels[i];
-            const selected = (mappedAns === label);
-            html += `<li class="opt-item${selected ? ' selected' : ''}" data-opt="${label}" onclick="selOpt(this,'${label}')">
-              <span class="opt-letter">${label}</span>
-              <span class="opt-text">${opt}</span>
-            </li>`;
-          });
-          html += '</ul>';
-          area.innerHTML = html;
-          break;
-        }
-        case 'checkbox': {
-          const rawSet = new Set(userAns.split(',').map(s => s.trim().toUpperCase()).filter(Boolean));
-          const newLabelSet = new Set();
-          rawSet.forEach(orig => { if (mapping[orig]) newLabelSet.add(mapping[orig]); });
-          let html2 = '<ul class="options-list">';
-          shuffled.options.forEach((opt, i) => {
-            const label = shuffled.labels[i];
-            const selected = newLabelSet.has(label);
-            html2 += `<li class="opt-item${selected ? ' selected' : ''}" data-opt="${label}" onclick="selChk(this,'${label}')">
-              <span class="opt-letter">${label}</span>
-              <span class="opt-text">${opt}</span>
-            </li>`;
-          });
-          html2 += '</ul>';
-          area.innerHTML = html2;
-          break;
-        }
-        case 'fill': {
-          area.innerHTML = `<div class="fill-area">
-            <textarea id="fillInput" placeholder="请输入答案（多空用顿号或逗号分隔）"
-                      onblur="saveFill()">${userAns}</textarea>
-            <div class="fill-hint">多空用顿号、或逗号，分隔</div>
-          </div>`;
-          break;
-        }
-        case 'judge': {
-          area.innerHTML = `<div class="judge-actions">
-            <button class="judge-btn${userAns==='A'?' sel-right':''}" onclick="selJudge('A')">✅ 对</button>
-            <button class="judge-btn${userAns==='B'?' sel-wrong':''}" onclick="selJudge('B')">❌ 错</button>
-          </div>`;
-          break;
-        }
-      }
-    }
-    /* =================================================================
-     *  renderAnswerBox() v6.0
-     * ================================================================= */
-    function renderAnswerBox(q) {
-      const box = document.getElementById('answerBox');
-      if (!showAnswer || currentMode === 'exam') {
-        box.style.display = 'none';
-        return;
-      }
-      box.style.display = 'block';
-      const userAns = currentMode === 'exam'
-        ? (examUserAnswers[q.id] || '')
-        : (Storage.getAnswer(q.id) || '');
-      const isCorrect = Storage.checkCorrect(q.id, userAns);
-      const shuffled = getShuffledForQ(q);
-      const refDisplay = App.formatAnswerMapped(q, shuffled);
-      const userDisplay = userAns
-        ? App.formatUserAnsMapped(userAns, q, shuffled)
-        : '';
-      box.innerHTML = `
-        <div><span class="ref">📌 参考答案：</span>${refDisplay}</div>
-        <div style="margin-top:6px;">${userDisplay ? '<span class="user">你的答案：' + userDisplay + '</span>' : '<span style="color:var(--text2);">你未作答</span>'}</div>
-        <div style="margin-top:4px;font-weight:600;color:${isCorrect ? 'var(--success)' : 'var(--danger)'};">
-          ${userAns ? (isCorrect ? '✅ 回答正确' : '❌ 回答错误') : '⚠️ 未作答'}</div>`;
-    }
-    /* ========== 笔记 & 标签 & 收藏 ========== */
-    function renderNoteTag(q) {
-      if (currentMode === 'exam') return;
-      const area = document.getElementById('noteTagArea');
-      area.style.display = 'block';
-      const meta = Storage.getQuestionData(q.id);
-      document.getElementById('noteInput').value = meta.note || '';
-      const tagArea = document.getElementById('tagArea');
-      const tags = Storage.getTags();
-      let tHTML = '<span style="font-size:.72rem;color:var(--text2);">🏷️ 标签：</span>';
-      tags.forEach(tag => {
-        const active = meta.tags && meta.tags.includes(tag);
-        tHTML += `<span class="tag${active ? ' tag-active' : ''}" onclick="toggleTag('${tag}')">${tag}</span>`;
-      });
-      tHTML += `<span class="tag tag-add" onclick="addCustomTag()">+ 新增</span>`;
-      tHTML += `<span class="tag${meta.collect ? ' tag-star' : ''}" onclick="toggleCollect()" style="margin-left:8px;cursor:pointer;">${meta.collect ? '⭐ 已收藏' : '☆ 收藏'}</span>`;
-      tagArea.innerHTML = tHTML;
-    }
-    /* ========== 题目高亮 ========== */
-    function updateHighlight(q) {
-      const card = document.getElementById('qCard');
-      card.classList.remove('correct', 'wrong');
-      if (currentMode === 'exam') return;
-      const ans = Storage.getAnswer(q.id);
-      if (!ans) return;
-      if (Storage.checkCorrect(q.id, ans)) {
-        card.classList.add('correct');
-      } else {
-        card.classList.add('wrong');
-      }
-    }
-    /* ========== 实时统计 ========== */
-    function updateStats() {
-      let done = 0, correct = 0, wrong = 0;
-      qList.forEach(q => {
-        const a = currentMode === 'exam' ? (examUserAnswers[q.id] || '') : (Storage.getAnswer(q.id) || '');
-        if (a) {
-          done++;
-          if (Storage.checkCorrect(q.id, a)) correct++;
-          else wrong++;
-        }
-      });
-      sessionStats = { done, correct, wrong };
-      document.getElementById('progText').textContent = done + '/' + qList.length;
-      document.getElementById('progDetail').textContent = '✔' + correct + ' ✘' + wrong;
-      document.getElementById('progAcc').textContent =
-        '正确率: ' + (done > 0 ? (correct / done * 100).toFixed(1) + '%' : '-');
-    }
-    /* ========== 答题卡 ========== */
-    function renderSheet() {
-      const grid = document.getElementById('sheetGrid');
-      if (qList.length > 100) { grid.style.display = 'none'; return; }
-      grid.style.display = 'flex';
-      grid.innerHTML = '';
-      qList.forEach((q, i) => {
-        let cls = 'sheet-item';
-        const a = currentMode === 'exam' ? (examUserAnswers[q.id] || '') : (Storage.getAnswer(q.id) || '');
-        if (a) {
-          cls += Storage.checkCorrect(q.id, a) ? ' done-correct' : ' done-wrong';
-        }
-        if (i === qIndex) cls += ' current';
-        grid.innerHTML += `<div class="${cls}" onclick="jumpTo(${i})">${i + 1}</div>`;
-      });
-    }
-    /* =================================================================
-     *  saveAnswerLocal() v6.0
-     *  【v6.0 新增】最后一题答完后自动生成报告并跳转 report.html
-     *    - 非考试模式：答题瞬间当前题就是最后一题 → 直接跳转
-     *    - 自动跳转场景：当前题是最后一题且自动跳转延迟≥0，等计时器触发后跳转
-     *    - 总共只跳转一次：用 reported 标志防重复
-     * ================================================================= */
-    let reportedForSession = false; // 防重复跳转
-    function saveAnswerLocal(val) {
-      const q = qList[qIndex];
-      if (!q) return;
-      if (currentMode === 'exam') {
-        let origVal = val;
-        if (currentOptMapping && (q.type === 'radio' || q.type === 'checkbox')) {
-          origVal = App.restoreOriginalAnswer(val, currentOptMapping.reverseMapping);
-        }
-        examUserAnswers[q.id] = origVal;
-        render();
-        return;
-      }
-      let origVal = val;
-      if (currentOptMapping && (q.type === 'radio' || q.type === 'checkbox')) {
-        origVal = App.restoreOriginalAnswer(val, currentOptMapping.reverseMapping);
-      }
-      const result = Storage.submitAnswer(q.id, origVal);
-      const isCorrect = result.correct;
-      if (currentMode === 'normal' || currentMode === 'wrong') {
-        showAnswer = true;
-        document.getElementById('btnToggleAns').textContent = '🙈 隐藏答案';
-      }
-      render();
-      clearAutoJump();
-      if (currentMode === 'exam') return;
-      // 【v6.0】最后一题答完→生成报告跳转（非考试模式）
-      function goReport() {
-        if (reportedForSession) return;
-        reportedForSession = true;
-        // 统计 session 数据
-        let total = qList.length, correct = 0, wrong = 0;
-        qList.forEach(qq => {
-          const ua = Storage.getAnswer(qq.id) || '';
-          if (ua) {
-            if (Storage.checkCorrect(qq.id, ua)) correct++;
-            else wrong++;
-          }
-        });
-        const acc = total > 0 ? ((correct / total) * 100).toFixed(1) : '0';
-        Storage.addSessionStat();
-        localStorage.setItem('eq_last_report', JSON.stringify({
-          total, correct, wrong, unanswered: total - correct - wrong,
-          accuracy: acc, elapsed: 0,
-          date: new Date().toISOString(),
-          qIds: qList.map(qq => qq.id),
-          answers: {},
-          mode: currentMode,
-          filterType
-        }));
-        window.location.href = 'report.html';
-      }
-      if (qIndex >= qList.length - 1) {
-        // 当前题就是最后一题，直接跳转（无延迟或自动跳转已处理均可）
-        if (isCorrect) {
-          const delay = Storage.getPref().autoJumpDelay || 1200;
-          if (delay > 0) {
-            autoJumpTimer = setTimeout(goReport, delay);
-          } else {
-            goReport();
-          }
-        } else {
-          // 答错不自动跳题，但仍需报告，给用户一点时间看答案（2秒后跳转）
-          autoJumpTimer = setTimeout(goReport, 2000);
-        }
-      } else if (isCorrect && qIndex < qList.length - 1) {
-        // 正常自动跳转下一题
-        const delay = Storage.getPref().autoJumpDelay || 1200;
-        if (delay > 0) {
-          autoJumpTimer = setTimeout(() => {
-            qIndex++;
-            showAnswer = false;
-            document.getElementById('btnToggleAns').textContent = '👁 显示答案';
-            document.getElementById('answerBox').style.display = 'none';
-            render();
-          }, delay);
-        }
-      }
-    }
-    function clearAutoJump() {
-      if (autoJumpTimer) { clearTimeout(autoJumpTimer); autoJumpTimer = null; }
-    }
-    /* ========== 选择处理 ========== */
-    window.selOpt = function(el, opt) {
-      document.querySelectorAll('.opt-item').forEach(e => e.classList.remove('selected'));
-      el.classList.add('selected');
-      saveAnswerLocal(opt);
-    };
-    window.selChk = function(el, opt) {
-      el.classList.toggle('selected');
-      const sels = [];
-      document.querySelectorAll('.opt-item.selected').forEach(e => sels.push(e.dataset.opt));
-      saveAnswerLocal(sels.join(','));
-    };
-    window.saveFill = function() {
-      const v = document.getElementById('fillInput').value.trim();
-      if (v) saveAnswerLocal(v);
-    };
-    window.selJudge = function(opt) {
-      saveAnswerLocal(opt);
-    };
-    /* ========== 导航 v6.0 ========== */
-    window.prevQ = function() {
-      clearAutoJump();
-      if (qIndex > 0) {
-        qIndex--;
-        if (currentMode !== 'review') showAnswer = false;
-        document.getElementById('btnToggleAns').textContent = '👁 显示答案';
-        document.getElementById('answerBox').style.display = 'none';
-        render();
-      }
-    };
-    window.nextQ = function() {
-      clearAutoJump();
-      if (qIndex < qList.length - 1) {
-        qIndex++;
-        if (currentMode !== 'review') showAnswer = false;
-        document.getElementById('btnToggleAns').textContent = '👁 显示答案';
-        document.getElementById('answerBox').style.display = 'none';
-        render();
-      }
-    };
-    window.jumpTo = function(i) {
-      clearAutoJump();
-      qIndex = i;
-      if (currentMode !== 'review') showAnswer = false;
-      document.getElementById('btnToggleAns').textContent = '👁 显示答案';
-      document.getElementById('answerBox').style.display = 'none';
-      render();
-    };
-    window.toggleAnswer = function() {
-      showAnswer = !showAnswer;
-      document.getElementById('btnToggleAns').textContent = showAnswer ? '🙈 隐藏答案' : '👁 显示答案';
-      render();
-    };
-    /* ========== 重做本次练习 v6.0 ========== */
-    window.redoSession = function() {
-      let doneCount = 0;
-      qList.forEach(q => { if (Storage.getAnswer(q.id)) doneCount++; });
-      document.getElementById('redoConfirmText').textContent =
-        '将清空本次练习中 ' + doneCount + ' 道已答题目的作答记录（共 ' + qList.length + ' 题），' +
-        '并回到第一题重新开始。此操作不可撤销，确定继续？';
-      document.getElementById('redoConfirmModal').style.display = 'flex';
-    };
-    window.closeRedoConfirm = function() {
-      document.getElementById('redoConfirmModal').style.display = 'none';
-    };
-    window.doRedoSession = function() {
-      document.getElementById('redoConfirmModal').style.display = 'none';
-      clearAutoJump();
-      qList.forEach(q => Storage.removeAnswer(q.id));
-      shuffledCache = new Map();
-      qIndex = 0;
-      showAnswer = false;
-      reportedForSession = false;
-      document.getElementById('btnToggleAns').textContent = '👁 显示答案';
-      document.getElementById('answerBox').style.display = 'none';
-      sessionStats = { done: 0, correct: 0, wrong: 0 };
-      render();
-    };
-    /* ========== 笔记 / 标签 / 收藏 ========== */
-    window.saveNote = function() {
-      const q = qList[qIndex];
-      if (!q) return;
-      const v = document.getElementById('noteInput').value.trim();
-      Storage.saveNote(q.id, v);
-    };
-    window.toggleTag = function(tag) {
-      const q = qList[qIndex];
-      if (!q) return;
-      Storage.toggleTag(q.id, tag);
-      renderNoteTag(q);
-    };
-    window.addCustomTag = function() {
-      const tag = prompt('输入新标签名称：');
-      if (tag && tag.trim()) {
-        Storage.addTag(tag.trim());
-        render();
-      }
-    };
-    window.toggleCollect = function() {
-      const q = qList[qIndex];
-      if (!q) return;
-      Storage.toggleCollect(q.id);
-      renderNoteTag(q);
-    };
-    /* ========== 模式切换 v6.0 ========== */
-    window.switchMode = function(m) {
-      clearAutoJump();
-      currentMode = m;
-      showAnswer = (m === 'review');
-      examUserAnswers = {};
-      examFinished = false;
-      reportedForSession = false;
-      document.getElementById('btnToggleAns').textContent = '👁 显示答案';
-      document.getElementById('answerBox').style.display = 'none';
-      buildList();
-      if (m === 'exam') examStartTime = Date.now();
-      qIndex = 0;
-      render();
-    };
-    window.toggleRandom = function() {
-      randomMode = document.getElementById('randomToggle').checked;
-      buildList();
-      qIndex = 0;
-      reportedForSession = false;
-      render();
-    };
-    window.toggleOptRandom = function() {
-      const checked = document.getElementById('optRandomToggle').checked;
-      Storage.setPref({ randomOptions: checked });
-      shuffledCache = new Map();
-      buildList();
-      qIndex = 0;
-      showAnswer = false;
-      reportedForSession = false;
-      document.getElementById('btnToggleAns').textContent = '👁 显示答案';
-      document.getElementById('answerBox').style.display = 'none';
-      render();
-    };
-    window.setCustomCount = function() {
-      buildList();
-      qIndex = 0;
-      reportedForSession = false;
-      render();
-    };
-    /* ========== 筛选 ========== */
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        filterType = this.dataset.type;
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        buildList();
-        qIndex = 0;
-        reportedForSession = false;
-        render();
-      });
-    });
-    /* ========== 考试交卷 ========== */
-    window.finishExam = function() {
-      if (!confirm('确定交卷吗？交卷后将无法修改答案。')) return;
-      examFinished = true;
-      clearAutoJump();
-      const elapsed = Math.round((Date.now() - examStartTime) / 1000);
-      let total = qList.length, correct = 0, wrong = 0;
-      qList.forEach(q => {
-        const ua = examUserAnswers[q.id] || '';
-        if (ua) {
-          if (Storage.checkCorrect(q.id, ua)) {
-            correct++;
-            Storage.submitAnswer(q.id, ua);
-          } else {
-            wrong++;
-            Storage.submitAnswer(q.id, ua);
-          }
-        }
-      });
-      const unanswered = total - correct - wrong;
-      const acc = total > 0 ? ((correct / total) * 100).toFixed(1) : '0';
-      Storage.addSessionStat();
-      localStorage.setItem('eq_last_report', JSON.stringify({
-        total, correct, wrong, unanswered,
-        accuracy: acc, elapsed,
-        date: new Date().toISOString(),
-        qIds: qList.map(q => q.id),
-        answers: examUserAnswers,
-        mode: 'exam',
-        filterType
-      }));
-      document.getElementById('examResultText').innerHTML =
-        `总题数：${total}<br>正确：${correct} | 错误：${wrong} | 未答：${unanswered}<br>正确率：${acc}%<br>耗时：${Math.floor(elapsed/60)}分${elapsed%60}秒`;
-      document.getElementById('examResultModal').style.display = 'flex';
-      document.getElementById('btnFinishExam').style.display = 'none';
-    };
-    window.closeExamResult = function() {
-      document.getElementById('examResultModal').style.display = 'none';
-    };
-    /* =================================================================
-     *  【v6.0 新增】离开页面时自动清除本次练习的全部作答
-     *    - 在 beforeunload 事件中删除当前 qList 所有题目的作答记录
-     *    - 不清除错题列表，答错的已经正确记录
-     *    - 下次打开又是全新的练习状态
-     * ================================================================= */
-    window.addEventListener('beforeunload', function() {
-      if (currentMode !== 'exam' && qList.length > 0) {
-        qList.forEach(q => { Storage.removeAnswer(q.id); });
-      }
-    });
-    /* ========== 快捷键 ========== */
-    Hotkey.registerExam({
-      selectOption(opt) {
-        const q = qList[qIndex];
-        if (!q) return;
-        if (q.type === 'radio') {
-          document.querySelectorAll('.opt-item').forEach(e => e.classList.remove('selected'));
-          const el = document.querySelector(`.opt-item[data-opt="${opt}"]`);
-          if (el) { el.classList.add('selected'); saveAnswerLocal(opt); }
-        } else if (q.type === 'checkbox') {
-          const el = document.querySelector(`.opt-item[data-opt="${opt}"]`);
-          if (el) {
-            el.classList.toggle('selected');
-            const sels = [];
-            document.querySelectorAll('.opt-item.selected').forEach(e => sels.push(e.dataset.opt));
-            saveAnswerLocal(sels.join(','));
-          }
-        } else if (q.type === 'judge') {
-          saveAnswerLocal(opt);
-        }
-      },
-      prev() { window.prevQ(); },
-      next() { window.nextQ(); }
-    });
-    /* ========== 初始化 ========== */
-    buildList();
-    if (currentMode === 'exam') examStartTime = Date.now();
-    if (currentMode === 'review') {
-      showAnswer = true;
-      document.getElementById('btnToggleAns').textContent = '🙈 隐藏答案';
-    }
-    render();
-  </script>
+  <script src="js/page.js"></script>
 </body>
 </html>

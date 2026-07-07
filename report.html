@@ -8,54 +8,56 @@
 </head>
 <body>
   <div class="container">
-    <header class="header"><h1>📊 练习报告</h1><p class="subtitle" id="reportDate"></p></header>
+    <header class="header"><h1 data-i18n="reportTitle">📊 练习报告</h1><p class="subtitle" id="reportDate"></p></header>
     <div class="card">
       <!-- 环形得分图 -->
       <div class="report-hero">
         <div class="score-circle"><canvas id="scoreCanvas" width="140" height="140"></canvas><div class="score-value" id="scoreText">-</div></div>
-        <h3 id="scoreLabel">本次得分</h3>
+        <h3 id="scoreLabel" data-i18n="reportScore">本次得分</h3>
       </div>
       <div class="report-stats" id="reportStats"></div>
     </div>
     <!-- 错题列表 -->
     <div class="card" id="wrongSummaryCard" style="display:none;">
-      <h2>❌ 错题汇总</h2>
+      <h2 data-i18n="wrongSummary">❌ 错题汇总</h2>
       <div id="wrongSummary"></div>
     </div>
     <!-- 操作 -->
     <div class="btn-group mt-12" style="justify-content:center;">
-      <a href="index.html" class="btn btn-secondary">🏠 返回首页</a>
-      <a href="exam.html?type=all" class="btn btn-primary">📝 继续刷题</a>
-      <a href="wrong.html" class="btn btn-danger">📕 错题本</a>
+      <a href="index.html" class="btn btn-secondary">🏠 <span data-i18n="backHome">返回首页</span></a>
+      <a href="exam.html?type=all" class="btn btn-primary">📝 <span data-i18n="continueQuiz">继续刷题</span></a>
+      <a href="wrong.html" class="btn btn-danger">📕 <span data-i18n="wrongBook">错题本</span></a>
     </div>
-    <footer class="footer"><p>再接再厉，坚持就是胜利！</p></footer>
+    <footer class="footer"><p data-i18n="keepGoing">再接再厉，坚持就是胜利！</p></footer>
   </div>
   <script src="js/question.js"></script>
   <script src="js/storage.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/common.js"></script>
   <script src="js/darkmode.js"></script>
   <script>
     Storage.init(); DarkMode.init();
+    I18N.applyToDOM();
     (function() {
       const raw = localStorage.getItem('eq_last_report');
       if (!raw) {
         document.getElementById('scoreText').textContent = '--';
-        document.getElementById('scoreLabel').textContent = '暂无报告数据';
+        document.getElementById('scoreLabel').textContent = I18N.t('noReportData');
         return;
       }
       const data = JSON.parse(raw);
-      document.getElementById('reportDate').textContent = '日期：' + (data.date || '未知');
+      document.getElementById('reportDate').textContent = I18N.t('date') + ': ' + (data.date || I18N.t('unknown'));
       document.getElementById('scoreText').textContent = data.accuracy + '%';
-      document.getElementById('scoreLabel').textContent = data.mode === 'exam' ? '模拟考试成绩' : '练习得分';
+      document.getElementById('scoreLabel').textContent = data.mode === 'exam' ? I18N.t('examScore') : I18N.t('reportScore');
       const canvas = document.getElementById('scoreCanvas');
       App.drawScoreRing(canvas, data.correct, data.total);
       document.getElementById('reportStats').innerHTML = `
-        <div class="stat-item"><div class="stat-num">${data.total}</div><div class="stat-label">总题数</div></div>
-        <div class="stat-item"><div class="stat-num" style="color:var(--success);">${data.correct}</div><div class="stat-label">正确</div></div>
-        <div class="stat-item"><div class="stat-num" style="color:var(--danger);">${data.wrong}</div><div class="stat-label">错误</div></div>
-        <div class="stat-item"><div class="stat-num">${data.unanswered || 0}</div><div class="stat-label">未答</div></div>
-        <div class="stat-item"><div class="stat-num">${data.accuracy}%</div><div class="stat-label">正确率</div></div>
-        <div class="stat-item"><div class="stat-num">${data.elapsed ? Math.floor(data.elapsed/60)+'m'+data.elapsed%60+'s' : '--'}</div><div class="stat-label">耗时</div></div>
+        <div class="stat-item"><div class="stat-num">${data.total}</div><div class="stat-label">${I18N.t('totalQ')}</div></div>
+        <div class="stat-item"><div class="stat-num" style="color:var(--success);">${data.correct}</div><div class="stat-label">${I18N.t('correct')}</div></div>
+        <div class="stat-item"><div class="stat-num" style="color:var(--danger);">${data.wrong}</div><div class="stat-label">${I18N.t('wrong')}</div></div>
+        <div class="stat-item"><div class="stat-num">${data.unanswered || 0}</div><div class="stat-label">${I18N.t('unanswered')}</div></div>
+        <div class="stat-item"><div class="stat-num">${data.accuracy}%</div><div class="stat-label">${I18N.t('accuracy')}</div></div>
+        <div class="stat-item"><div class="stat-num">${data.elapsed ? Math.floor(data.elapsed/60)+'m'+data.elapsed%60+'s' : '--'}</div><div class="stat-label">${I18N.t('elapsed')}</div></div>
       `;
       if (data.qIds && data.answers && data.wrong > 0) {
         const card = document.getElementById('wrongSummaryCard');
@@ -73,7 +75,7 @@
             <span class="badge badge-danger">#${w.q.id}</span>
             <strong>${w.q.title}</strong><br>
             <span style="font-size:.72rem;">✅ ${App.formatAnswer(w.q)}</span><br>
-            <span style="font-size:.72rem;color:var(--danger);">❌ 你的答案：${w.ua}</span>
+            <span style="font-size:.72rem;color:var(--danger);">❌ ${I18N.t('yourAns')}: ${w.ua}</span>
           </div>
         `).join('');
       }
