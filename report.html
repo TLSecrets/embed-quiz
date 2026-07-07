@@ -53,24 +53,29 @@
         <div class="stat-item"><div class="stat-num">${data.total}</div><div class="stat-label">总题数</div></div>
         <div class="stat-item"><div class="stat-num" style="color:var(--success);">${data.correct}</div><div class="stat-label">正确</div></div>
         <div class="stat-item"><div class="stat-num" style="color:var(--danger);">${data.wrong}</div><div class="stat-label">错误</div></div>
+        <div class="stat-item"><div class="stat-num">${data.unanswered || 0}</div><div class="stat-label">未答</div></div>
         <div class="stat-item"><div class="stat-num">${data.accuracy}%</div><div class="stat-label">正确率</div></div>
         <div class="stat-item"><div class="stat-num">${data.elapsed ? Math.floor(data.elapsed/60)+'m'+data.elapsed%60+'s' : '--'}</div><div class="stat-label">耗时</div></div>
       `;
       if (data.qIds && data.answers && data.wrong > 0) {
         const card = document.getElementById('wrongSummaryCard');
         card.style.display = 'block';
-        const ws = document.getElementById('wrongSummary');
-        ws.innerHTML = '';
+        const wrongList = [];
         data.qIds.forEach(id => {
-          const q = questionList.find(qq => qq.id === id);
-          if (!q) return;
           const ua = data.answers[id] || '';
           if (ua && !Storage.checkCorrect(id, ua)) {
-            ws.innerHTML += `<div class="opt-item wrong-opt" style="cursor:default;margin-bottom:6px;">
-              <span class="opt-text"><strong>#${q.id}</strong> ${q.title}<br><small>你的答案：${ua} | 参考答案：${App.formatAnswer(q)}</small></span>
-            </div>`;
+            const q = questionList.find(qq => qq.id === id);
+            if (q) wrongList.push({q, ua});
           }
         });
+        document.getElementById('wrongSummary').innerHTML = wrongList.map(w => `
+          <div class="wrong-brief">
+            <span class="badge badge-danger">#${w.q.id}</span>
+            <strong>${w.q.title}</strong><br>
+            <span style="font-size:.72rem;">✅ ${App.formatAnswer(w.q)}</span><br>
+            <span style="font-size:.72rem;color:var(--danger);">❌ 你的答案：${w.ua}</span>
+          </div>
+        `).join('');
       }
     })();
   </script>

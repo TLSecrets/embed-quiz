@@ -12,8 +12,7 @@
       <h1>📚 嵌入式应用开发</h1>
       <p class="subtitle">2025-2026学年第2学期 · 客观题刷题系统（共167题）</p>
     </header>
-
-    <!-- 统计仪表盘 -->
+    <!-- 统计仪表盘 v6.0（已移除正确率趋势图） -->
     <div class="card">
       <h2>📊 学习仪表盘</h2>
       <div class="stat-grid" id="statGrid">
@@ -24,11 +23,7 @@
         <div class="stat-item"><div class="stat-num" id="stAccuracy">0%</div><div class="stat-label">正确率</div></div>
         <div class="stat-item"><div class="stat-num" id="stSessions">0</div><div class="stat-label">练习次数</div></div>
       </div>
-      <!-- 趋势图 v2.0 -->
-      <h3 style="margin-top:12px;">📈 正确率趋势</h3>
-      <canvas class="trend-chart" id="trendChart" width="600" height="180"></canvas>
     </div>
-
     <!-- 快速开始 -->
     <div class="card">
       <h2>🚀 快速开始</h2>
@@ -40,14 +35,12 @@
         <a href="wrong.html" class="btn btn-secondary btn-block">📕 错题训练 <span id="wrongBadge" class="badge badge-danger" style="display:none;">0</span></a>
       </div>
     </div>
-
     <!-- 分类入口 -->
     <div class="card">
       <h2>📂 分类刷题</h2>
       <div class="type-grid" id="typeGrid"></div>
     </div>
-
-    <!-- 全局设置 v2.0 -->
+    <!-- 全局设置 v6.0（已移除趋势图相关描述） -->
     <div class="card">
       <h2>⚙️ 全局设置</h2>
       <div class="setting-row">
@@ -66,39 +59,14 @@
         <label>⏱️ 自动跳转延迟 (ms, 0=关闭)</label>
         <input type="number" class="inline-input" id="autoJumpDelay" value="1200" min="0" max="5000" step="100" onchange="updateAutoJump(this.value)" style="width:80px;">
       </div>
-      <div class="setting-row">
-        <label>🔄 间隔重复强度 (1-10)</label>
-        <input type="range" id="spacedIntensity" min="1" max="10" value="3" onchange="updateSpIntensity(this.value)">
-        <span id="intensityLabel">3</span>
-      </div>
-      <div class="setting-row">
-        <label>🎯 错题正确率阈值 ≤ </label>
-        <input type="number" class="inline-input" id="wrongThreshold" value="50" min="0" max="100" onchange="updateWrongThreshold(this.value)" style="width:60px;"> %
-        <span class="desc">仅正确率≤阈值的错题纳入复习</span>
-      </div>
-      <div class="setting-row">
-        <label>📌 间隔重复插入模式</label>
-        <select id="insertMode" onchange="updateInsertMode(this.value)" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.78rem;">
-          <option value="replace">替换模式（总量不变）</option>
-          <option value="append">追加模式（总量增加）</option>
-        </select>
-      </div>
-      <div class="setting-row">
-        <label>📋 复习优先级</label>
-        <div style="display:flex;gap:12px;font-size:.78rem;">
-          <label><input type="checkbox" id="prefRecent" checked onchange="updatePriority()"> 优先本次错题</label>
-          <label><input type="checkbox" id="prefAllHistory" checked onchange="updatePriority()"> 优先全部历史</label>
-        </div>
-      </div>
       <div class="btn-group mt-12">
         <button class="btn btn-danger btn-sm" onclick="confirmClear('all')">🗑️ 清空全部记录</button>
         <button class="btn btn-warn btn-sm" onclick="confirmClear('wrong')">🗑️ 仅清空错题</button>
         <button class="btn btn-danger btn-sm" onclick="confirmClear('answers')">🗑️ 仅清空作答</button>
       </div>
     </div>
-    <footer class="footer"><p>纯前端 · localStorage 持久化 · 零依赖 · GitHub Pages 部署 · v2.0</p></footer>
+    <footer class="footer"><p>纯前端 · localStorage 持久化 · 零依赖 · GitHub Pages 部署 · v6.0</p></footer>
   </div>
-
   <!-- 确认弹窗 -->
   <div class="modal-overlay" id="confirmModal" style="display:none;">
     <div class="modal-box">
@@ -110,7 +78,6 @@
       </div>
     </div>
   </div>
-
   <script src="js/question.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/common.js"></script>
@@ -118,43 +85,20 @@
   <script>
     Storage.init();
     DarkMode.init();
-
-    // ========== 同步设置面板 v2.0 ==========
+    // ========== 同步设置面板 v6.0 ==========
     (function() {
       const pref = Storage.getPref();
       document.getElementById('darkSwitch').checked = pref.darkMode || false;
       document.getElementById('hkSwitch').checked = pref.hotkeyEnabled !== false;
       document.getElementById('randomOptSwitch').checked = pref.randomOptions || false;
       document.getElementById('autoJumpDelay').value = pref.autoJumpDelay !== undefined ? pref.autoJumpDelay : 1200;
-      document.getElementById('spacedIntensity').value = pref.spacedIntensity || 3;
-      document.getElementById('intensityLabel').textContent = pref.spacedIntensity || 3;
-      document.getElementById('wrongThreshold').value = pref.wrongThreshold !== undefined ? pref.wrongThreshold : 50;
-      document.getElementById('insertMode').value = pref.insertMode || 'append';
-      document.getElementById('prefRecent').checked = pref.preferRecentWrongs !== false;
-      document.getElementById('prefAllHistory').checked = pref.preferAllHistoryWrongs !== false;
     })();
-
     // ========== 设置回调 ==========
     window.toggleHotkey = function(v) { Storage.setPref({ hotkeyEnabled: v }); };
     window.toggleRandomOpt = function(v) { Storage.setPref({ randomOptions: v }); };
     window.updateAutoJump = function(v) {
       Storage.setPref({ autoJumpDelay: parseInt(v) || 0 });
     };
-    window.updateSpIntensity = function(v) {
-      document.getElementById('intensityLabel').textContent = v;
-      Storage.setPref({ spacedIntensity: parseInt(v) });
-    };
-    window.updateWrongThreshold = function(v) {
-      Storage.setPref({ wrongThreshold: Math.max(0, Math.min(100, parseInt(v) || 50)) });
-    };
-    window.updateInsertMode = function(v) { Storage.setPref({ insertMode: v }); };
-    window.updatePriority = function() {
-      Storage.setPref({
-        preferRecentWrongs: document.getElementById('prefRecent').checked,
-        preferAllHistoryWrongs: document.getElementById('prefAllHistory').checked
-      });
-    };
-
     // ========== 确认弹窗 ==========
     let clearTarget = '';
     window.confirmClear = function(type) {
@@ -166,7 +110,7 @@
         msg.textContent = '⚠️ 确定要清空所有作答记录、错题本和统计数据吗？此操作不可恢复！';
       } else if (type === 'wrong') {
         title.textContent = '清空错题本';
-        msg.textContent = '确定清空所有错题记录和间隔重复数据吗？作答记录保留。';
+        msg.textContent = '确定清空所有错题记录吗？作答记录保留。';
       } else if (type === 'answers') {
         title.textContent = '清空作答记录';
         msg.textContent = '确定清空全部作答记录吗？错题本保留。';
@@ -180,19 +124,16 @@
         Storage.clearAllWrong();
         Storage.clearProgress();
         localStorage.removeItem('eq_global_stats');
-        localStorage.removeItem('eq_spaced_repeat');
         localStorage.removeItem('eq_q_meta');
       } else if (clearTarget === 'wrong') {
         Storage.clearAllWrong();
-        localStorage.removeItem('eq_spaced_repeat');
       } else if (clearTarget === 'answers') {
         Storage.clearAllAnswers();
       }
       document.getElementById('confirmModal').style.display = 'none';
       location.reload();
     };
-
-    // ========== 仪表盘渲染 v2.0 ==========
+    // ========== 仪表盘渲染 v6.0（已移除趋势图） ==========
     (function renderDashboard() {
       let answered = 0, correct = 0;
       questionList.forEach(q => {
@@ -211,20 +152,10 @@
         answered > 0 ? (correct / answered * 100).toFixed(1) + '%' : '0%';
       const stats = Storage.getStats();
       document.getElementById('stSessions').textContent = stats.totalSessions || 0;
-
       // 错题徽章
       const wb = document.getElementById('wrongBadge');
       if (wrongCount > 0) { wb.style.display = 'inline-block'; wb.textContent = wrongCount; }
       else wb.style.display = 'none';
-
-      // v2.0: 趋势图（Canvas resize 后立即绘制）
-      const canvas = document.getElementById('trendChart');
-      if (stats.accuracyHistory && stats.accuracyHistory.length > 0) {
-        App.drawTrendChart(canvas, stats.accuracyHistory);
-      } else {
-        App.drawTrendChart(canvas, []);
-      }
-
       // 题型入口
       const grid = document.getElementById('typeGrid');
       const types = ['radio', 'checkbox', 'fill', 'judge'];

@@ -33,6 +33,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{opacity:.85}
 .btn-secondary{background:var(--btn-bg);color:var(--text)}.btn-secondary:hover{background:var(--btn-hover)}
 .btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{opacity:.85}
+.btn-warning{background:#e09f3e;color:#fff}.btn-warning:hover{opacity:.85}
 .btn-success{background:var(--success);color:#fff}.btn-success:hover{opacity:.85}
 .btn-sm{padding:6px 12px;font-size:.78rem}.btn-block{display:block;width:100%}
 .btn-group{display:flex;flex-wrap:wrap;gap:8px}

@@ -50,19 +50,6 @@
           <button class="btn btn-danger btn-sm" onclick="confirmClearWrong()">🗑️ 清空错题本</button>
         </div>
       </div>
-
-      <!-- v2.0: 智能训练双策略（可独立开关） -->
-      <div class="flex-wrap mt-8" style="border-top:1px solid var(--border);padding-top:8px;">
-        <span style="font-size:.82rem;font-weight:600;">🧠 智能训练策略：</span>
-        <label style="font-size:.78rem;">
-          <input type="checkbox" id="strategyFreq" checked onchange="saveStrategy()"> 错误频次优先
-        </label>
-        <label style="font-size:.78rem;">
-          <input type="checkbox" id="strategySpaced" checked onchange="saveStrategy()"> 艾宾浩斯间隔重复
-        </label>
-        <button class="btn btn-primary btn-sm" onclick="startSmartTraining()">▶ 开始智能训练</button>
-        <span style="font-size:.72rem;color:var(--text2);">（策略可自由组合）</span>
-      </div>
     </div>
 
     <!-- 错题列表 -->
@@ -72,7 +59,7 @@
       <p>错题本为空，太棒了！</p>
     </div>
 
-    <!-- 单题详情弹窗 v2.0 -->
+    <!-- 单题详情弹窗 -->
     <div class="modal-overlay" id="detailModal" style="display:none;">
       <div class="modal-box" style="max-width:560px;max-height:82vh;overflow-y:auto;">
         <h3 id="detailTitle">错题详情</h3>
@@ -89,7 +76,7 @@
   <div class="modal-overlay" id="confirmModal" style="display:none;">
     <div class="modal-box">
       <h3>确认清空</h3>
-      <p>确定清空所有错题记录和间隔重复数据吗？此操作不可恢复。</p>
+      <p>确定清空所有错题记录吗？此操作不可恢复。</p>
       <div class="modal-actions">
         <button class="btn btn-secondary btn-sm" onclick="closeConfirm()">取消</button>
         <button class="btn btn-danger btn-sm" onclick="execClearWrong()">确认</button>
@@ -111,20 +98,9 @@
       Storage.getTags().forEach(t => {
         sel.innerHTML += `<option value="${t}">${t}</option>`;
       });
-      // 恢复策略开关
-      const pref = Storage.getPref();
-      document.getElementById('strategyFreq').checked = pref.strategyFreq !== false;
-      document.getElementById('strategySpaced').checked = pref.strategySpaced !== false;
     })();
 
-    window.saveStrategy = function() {
-      Storage.setPref({
-        strategyFreq: document.getElementById('strategyFreq').checked,
-        strategySpaced: document.getElementById('strategySpaced').checked
-      });
-    };
-
-    /* ========== 筛选+排序 v2.0 ========== */
+    /* ========== 筛选+排序 ========== */
     function getFilteredWrongs() {
       let ids = Storage.getWrongList();
       const ft = document.getElementById('filterTypeSelect').value;
@@ -136,7 +112,7 @@
       // 题型筛选
       if (ft !== 'all') qs = qs.filter(q => q.type === ft);
 
-      // 标签筛选（从元数据读取）
+      // 标签筛选
       if (ftag !== 'all') {
         qs = qs.filter(q => {
           const meta = Storage.getQuestionData(q.id);
@@ -152,7 +128,7 @@
         });
       }
 
-      // 排序 v2.0（修复多维排序）
+      // 排序（基于错误次数/错误率/时间）
       const sortBy = document.getElementById('sortBy').value;
       const detail = Storage.getWrongDetail();
       qs.sort((a, b) => {
@@ -204,7 +180,7 @@
       }).join('');
     }
 
-    /* ========== 详情弹窗 v2.0 ========== */
+    /* ========== 详情弹窗 ========== */
     let detailQid = null;
     window.openDetail = function(id) {
       detailQid = id;
@@ -269,65 +245,8 @@
     };
     window.execClearWrong = function() {
       Storage.clearAllWrong();
-      localStorage.removeItem('eq_spaced_repeat');
       document.getElementById('confirmModal').style.display = 'none';
       renderList();
-    };
-
-    /* ========== 智能训练 v2.0（双策略独立组合） ========== */
-    window.startSmartTraining = function() {
-      const useFreq = document.getElementById('strategyFreq').checked;
-      const useSpaced = document.getElementById('strategySpaced').checked;
-
-      if (!useFreq && !useSpaced) {
-        alert('请至少选择一种训练策略！');
-        return;
-      }
-
-      let wids = Storage.getWrongList();
-      if (wids.length === 0) {
-        alert('没有错题可训练！');
-        return;
-      }
-
-      // 应用当前筛选
-      let filteredQs = getFilteredWrongs();
-      let trainingIds = filteredQs.map(q => q.id);
-
-      // 策略1: 频次优先排序
-      if (useFreq && !useSpaced) {
-        trainingIds = App.getFreqSortedWrongs(trainingIds, 'count', 'desc').map(id => id);
-      }
-
-      // 策略2: 间隔重复优先
-      if (useSpaced && !useFreq) {
-        const pref = Storage.getPref();
-        const intensity = pref.spacedIntensity || 3;
-        const typeFilter = document.getElementById('filterTypeSelect').value;
-        const spaced = App.getSpacedQuestions(trainingIds, intensity, typeFilter === 'all' ? null : typeFilter);
-        trainingIds = spaced;
-      }
-
-      // 两种同时开启：合并
-      if (useFreq && useSpaced) {
-        const freqSorted = App.getFreqSortedWrongs(trainingIds, 'count', 'desc');
-        const pref = Storage.getPref();
-        const typeFilter = document.getElementById('filterTypeSelect').value;
-        const spaced = App.getSpacedQuestions(trainingIds, pref.spacedIntensity||3, typeFilter==='all'?null:typeFilter);
-        // 频次排序的在前，间隔重复的在后面补充
-        const comb = [...new Set([...freqSorted, ...spaced])];
-        trainingIds = comb;
-      }
-
-      if (trainingIds.length === 0) {
-        alert('当前条件筛选下没有需要训练的错题！');
-        return;
-      }
-
-      // 存储训练ID列表
-      sessionStorage.setItem('eq_smart_training', JSON.stringify(trainingIds.slice(0, 50)));
-      Storage.saveProgress({ filterType:'all', mode:'wrong', index:0, random:false });
-      window.location.href = 'exam.html?type=all&mode=wrong';
     };
 
     /* ========== 初始渲染 ========== */
