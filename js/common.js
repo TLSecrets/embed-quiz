@@ -1,15 +1,17 @@
 /* ============================================
-   common.js - 通用工具函数 (v2.0 全面重构)
-   渲染、图表、抽题、排序、选项打乱、
-   间隔重复插入算法（题型匹配+替换/追加模式）
+   common.js - 通用工具函数 (v3.0 流式出题重构)
    
-   【v2.0 修改点】
-   - 增加 shuffleOptions: 选项随机打乱 + 原序映射
-   - 增加 insertSpacedReviews: 间隔重复错题动态插入（题型匹配）
-   - 增加 getWrongPoolByThreshold: 错题准入阈值过滤
-   - drawTrendChart 增强：Y轴范围动态、数据标签
-   - drawScoreRing 颜色调整
-   - getSpacedQuestions 增加题型过滤参数
+   【v3.0 重大变更】
+   - 废弃 insertSpacedReviews() 一次性预生成方案
+   - 新增 getSpacedReviewPool() 获取可按需取用的复习错题池
+   - 新增 popNextSpacedQ() 从池中弹出下一道待复习题（流式单题获取）
+   - 新增 shouldInsertSpaced() 判断当前位置是否应插入复习题
+   - 动态流式出题核心：每答完 N 道新题，从池中实时取一道插入
+   
+   【保留功能】
+   - shuffleOptionsIfEnabled / restoreOriginalAnswer 选项打乱
+   - drawScoreRing / drawTrendChart Canvas 图表
+   - filterQuestions / shuffle 基础工具
    ============================================ */
 const App = {
   /** 按题型筛选 */
@@ -28,19 +30,16 @@ const App = {
     return r;
   },
 
-  /** 题型名称 */
   getTypeName(t) {
     const m = { radio:'单选题', checkbox:'多选题', fill:'填空题', judge:'判断题', all:'全部' };
     return m[t] || t;
   },
 
-  /** 题型图标 */
   getTypeIcon(t) {
     const m = { radio:'🔘', checkbox:'☑️', fill:'✍️', judge:'⚖️', all:'📋' };
     return m[t] || '❓';
   },
 
-  /** 格式化参考答案显示 */
   formatAnswer(q) {
     const a = q.answer;
     switch (q.type) {
@@ -53,7 +52,6 @@ const App = {
     return a;
   },
 
-  /** 图片渲染（含加载失败占位） */
   setImageSrc(imgEl, src) {
     if (!src) {
       imgEl.style.display = 'none';
@@ -64,7 +62,7 @@ const App = {
       this.style.display = 'block';
       this.style.background = '#f0ebe3';
       this.style.minHeight = '60px';
-      this.alt = '🖼 图片加载失败：' + src;
+      this.style.alt = '🖼 图片加载失败：' + src;
       this.src = '';
     };
     imgEl.onload = function() {
@@ -75,28 +73,26 @@ const App = {
     imgEl.src = src;
   },
 
-  // ===================== 选项随机打乱 v2.0 =====================
+  // ===================== 选项随机打乱 =====================
   /**
-   * 对题目选项进行随机打乱，返回 { options, mapping }
-   * mapping: { 'A':'B', 'B':'C', ... } 原标签→新标签
-   * reverseMapping: { 'B':'A', 'C':'B', ... } 新标签→原标签（用于还原答案比对）
-   * 不打乱时返回原序
+   * 对题目选项进行随机打乱，返回 { options, labels, mapping, reverseMapping }
+   * - mapping: 原标签(A/B/C/D) → 新标签
+   * - reverseMapping: 新标签 → 原标签（用于还原用户答案）
    */
   shuffleOptionsIfEnabled(q) {
     const pref = (typeof Storage !== 'undefined') ? Storage.getPref() : {};
     if (!pref.randomOptions || q.type === 'fill' || q.type === 'judge') {
-      // 不打乱
       const labels = ['A','B','C','D'].slice(0, q.options.length);
       const mapping = {};
       labels.forEach(l => mapping[l] = l);
-      return { options: [...q.options], labels, mapping, reverseMapping: mapping };
+      return { options: [...q.options], labels, mapping, reverseMapping: { ...mapping } };
     }
     const indices = q.options.map((_, i) => i);
     const shuffled = this.shuffle(indices);
     const labels = ['A','B','C','D'];
     const newOptions = shuffled.map(i => q.options[i]);
-    const mapping = {};     // 原标签→新标签
-    const reverseMapping = {}; // 新标签→原标签
+    const mapping = {};
+    const reverseMapping = {};
     shuffled.forEach((origIdx, newIdx) => {
       const origLabel = labels[origIdx];
       const newLabel = labels[newIdx];
@@ -106,11 +102,7 @@ const App = {
     return { options: newOptions, labels: labels.slice(0, q.options.length), mapping, reverseMapping };
   },
 
-  /**
-   * 将用户按新标签选择的答案还原为原标签答案，用于存储和判分
-   * userNewAns: 'A' 或 'A,B'
-   * reverseMapping: { 'A':'C', 'B':'A' ... }
-   */
+  /** 将用户按打乱后标签选择的答案，还原为原始标签答案 */
   restoreOriginalAnswer(userNewAns, reverseMapping) {
     if (!userNewAns || !reverseMapping) return userNewAns;
     return userNewAns.split(',').map(s => {
@@ -119,97 +111,82 @@ const App = {
     }).join(',');
   },
 
-  // ===================== 间隔重复插入算法 v2.0 =====================
+  // ================================================================
+  //  =====  v3.0 流式动态间隔重复出题——核心重构  =====
+  //  设计思路：
+  //    不再 buildList() 一次性生成全部题目，改为维护两个队列：
+  //    - newQueue: 待出的普通新题
+  //    - spacedPool: 待复习的错题池（按遗忘权重排序）
+  //    每答完一道新题，计数器+1；每 N 道新题后，从池中取出1道
+  //    错题动态插入流中，真正实现艾宾浩斯间隔重复。
+  // ================================================================
+
   /**
-   * 从错题库中按准入阈值筛选待复习题目
-   * typeFilter: 仅返回匹配题型（null则不限制）
-   * priorityMode: 'recent' | 'all' | 'both'
+   * 构建符合条件（题型+阈值）的复习错题池
+   * 返回按遗忘权重降序排列的错题ID数组
+   * @param {string|null} typeFilter - 'radio'|'checkbox'|'fill'|'judge'|null
+   * @param {Set} excludeIds - 已在队列中的题目ID集合（去重）
    */
-  getWrongPoolByThreshold(typeFilter, priorityMode) {
+  getSpacedReviewPool(typeFilter, excludeIds) {
     const pref = Storage.getPref();
     const threshold = (pref.wrongThreshold !== undefined ? pref.wrongThreshold : 50) / 100;
     const detail = Storage.getWrongDetail();
     const sd = Storage.getSpacedData();
     const allWrongs = Storage.getWrongList();
 
-    return allWrongs.filter(id => {
-      // 题型匹配
+    const candidates = allWrongs.filter(id => {
+      // 去重
+      if (excludeIds && excludeIds.has(id)) return false;
+      // 题型强隔离
       if (typeFilter) {
         const q = questionList.find(qq => qq.id === id);
         if (!q || q.type !== typeFilter) return false;
       }
-      // 阈值筛选
+      // 错题准入阈值：仅正确率 ≤ 阈值的纳入
       const d = detail[id];
       if (d && d.totalAttempts > 0) {
         const correctRate = 1 - (d.wrongRate || 0);
         if (correctRate > threshold) return false;
       }
+      // 间隔到期检查：过了复习间隔的才纳入
+      const entry = sd[id];
+      if (entry && entry.lastReview > 0) {
+        const intervalMs = entry.interval * 24 * 60 * 60 * 1000;
+        if (Date.now() - entry.lastReview < intervalMs) return false;
+      }
       return true;
-    }).sort((a, b) => {
-      // 按遗忘权重降序
-      const wa = (sd[a] && sd[a].weight) || 0;
-      const wb = (sd[b] && sd[b].weight) || 0;
-      return wb - wa;
     });
+
+    // 按遗忘权重降序排序
+    candidates.sort((a, b) => (sd[b]?.weight || 0) - (sd[a]?.weight || 0));
+    return candidates;
   },
 
   /**
-   * 将待复习错题插入题目列表
-   * @param {Array} baseList 原始题目列表
-   * @param {string} typeFilter 当前题型筛选
-   * @param {string} insertMode 'replace' | 'append'
-   * @param {number} intensity 区间强度(1~10)
-   * @returns {Array} 插入后的题目列表
+   * 判断当前位置是否应插入一道复习错题
+   * @param {number} newAnsweredCount - 已作答的新题数
+   * @param {number} insertEvery - 每 N 道新题插入1道
    */
-  insertSpacedReviews(baseList, typeFilter, insertMode, intensity) {
-    const pool = this.getWrongPoolByThreshold(typeFilter === 'all' ? null : typeFilter, 'all');
-    if (pool.length === 0) return baseList;
-
-    // 去重：排除已在baseList中的题目
-    const baseIds = new Set(baseList.map(q => q.id));
-    const available = pool.filter(id => !baseIds.has(id));
-    if (available.length === 0) return baseList;
-
-    intensity = Math.max(1, Math.min(10, intensity || 3));
-    const insertEvery = Math.max(1, Math.floor(10 / intensity)); // 每 N 道新题插入1道
-
-    if (insertMode === 'replace') {
-      // 模式1：替换模式——每隔 insertEvery 道替换1道为错题
-      const result = [...baseList];
-      let poolIdx = 0;
-      for (let i = insertEvery - 1; i < result.length && poolIdx < available.length; i += insertEvery) {
-        const wrongQ = questionList.find(q => q.id === available[poolIdx]);
-        if (wrongQ) {
-          result[i] = wrongQ;
-          poolIdx++;
-        }
-      }
-      return result;
-    } else {
-      // 模式2：追加模式——每隔 insertEvery 道插入1道错题，总量增加
-      const result = [];
-      let poolIdx = 0;
-      for (let i = 0; i < baseList.length; i++) {
-        result.push(baseList[i]);
-        if ((i + 1) % insertEvery === 0 && poolIdx < available.length) {
-          const wrongQ = questionList.find(q => q.id === available[poolIdx]);
-          if (wrongQ) {
-            result.push(wrongQ);
-            poolIdx++;
-          }
-        }
-      }
-      // 末尾追加剩余的
-      while (poolIdx < available.length) {
-        const wrongQ = questionList.find(q => q.id === available[poolIdx]);
-        if (wrongQ) result.push(wrongQ);
-        poolIdx++;
-      }
-      return result;
-    }
+  shouldInsertSpaced(newAnsweredCount, insertEvery) {
+    if (insertEvery <= 0) return false;
+    return newAnsweredCount > 0 && newAnsweredCount % insertEvery === 0;
   },
 
-  // ===================== 环形得分图 (Canvas) =====================
+  /**
+   * 从复习池中取出下一道待复习题（题目对象），同时从池中移除
+   * @param {Array} pool - 复习池ID数组（会被原地修改）
+   * @returns {object|null} 题目对象
+   */
+  popNextSpacedQ(pool) {
+    while (pool.length > 0) {
+      const id = pool.shift();
+      const q = questionList.find(qq => qq.id === id);
+      if (q) return q;
+    }
+    return null;
+  },
+
+  // ===================== 环形得分图 =====================
   drawScoreRing(canvas, score, total) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -218,13 +195,11 @@ const App = {
     const cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2 - 12;
     ctx.clearRect(0, 0, w, h);
     const pct = total > 0 ? score / total : 0;
-    // 背景环
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.lineWidth = 10;
     ctx.strokeStyle = '#e0dcd3';
     ctx.stroke();
-    // 进度弧
     const start = -Math.PI / 2;
     const end = start + Math.PI * 2 * pct;
     ctx.beginPath();
@@ -237,7 +212,6 @@ const App = {
     else { grad.addColorStop(0, '#c1292e'); grad.addColorStop(1, '#f87171'); }
     ctx.strokeStyle = grad;
     ctx.stroke();
-    // 中心文字
     const tc = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#333';
     ctx.fillStyle = tc;
     ctx.font = 'bold 1.6rem ' + getComputedStyle(document.body).fontFamily;
@@ -246,17 +220,16 @@ const App = {
     ctx.fillText((pct * 100).toFixed(1) + '%', cx, cy);
   },
 
-  // ===================== 趋势折线图 (Canvas) v2.0 增强 =====================
+  // ===================== 趋势折线图 =====================
   drawTrendChart(canvas, data) {
-    if (!canvas || !data || data.length === 0) {
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text2').trim() || '#999';
-        ctx.font = '14px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('暂无练习记录，开始刷题后将生成趋势图', canvas.width/2, canvas.height/2);
-      }
+    if (!canvas) return;
+    if (!data || data.length === 0) {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text2').trim() || '#999';
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('暂无练习记录，开始刷题后将生成趋势图', canvas.width/2, canvas.height/2);
       return;
     }
     const ctx = canvas.getContext('2d');
@@ -266,12 +239,9 @@ const App = {
     const pw = w - pad.left - pad.right;
     const ph = h - pad.top - pad.bottom;
     ctx.clearRect(0, 0, w, h);
-
     const vals = data.map(d => d.accuracy);
     const textColor = getComputedStyle(document.body).getPropertyValue('--text2').trim() || '#666';
     const primaryColor = getComputedStyle(document.body).getPropertyValue('--primary').trim() || '#4a7c59';
-
-    // 坐标轴
     ctx.strokeStyle = '#ccc';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -279,8 +249,6 @@ const App = {
     ctx.lineTo(pad.left, h - pad.bottom);
     ctx.lineTo(w - pad.right, h - pad.bottom);
     ctx.stroke();
-
-    // Y 轴标签
     ctx.fillStyle = textColor;
     ctx.font = '10px sans-serif';
     ctx.textAlign = 'right';
@@ -293,8 +261,6 @@ const App = {
       ctx.lineTo(w - pad.right, y);
       ctx.stroke();
     }
-
-    // 折线
     if (vals.length < 1) return;
     const stepX = vals.length === 1 ? pw / 2 : pw / Math.max(vals.length - 1, 1);
     ctx.beginPath();
@@ -308,8 +274,6 @@ const App = {
       else ctx.lineTo(x, y);
     });
     ctx.stroke();
-
-    // 数据点
     vals.forEach((v, i) => {
       const x = vals.length === 1 ? pad.left + pw / 2 : pad.left + i * stepX;
       const y = pad.top + ph * (1 - v / 100);
@@ -318,8 +282,6 @@ const App = {
       ctx.fillStyle = primaryColor;
       ctx.fill();
     });
-
-    // X 轴标签（每5个显示一次日期）
     ctx.fillStyle = textColor;
     ctx.textAlign = 'center';
     ctx.font = '9px sans-serif';
@@ -331,7 +293,7 @@ const App = {
     });
   },
 
-  // ===================== 错题权重计算 =====================
+  // ===================== 错题权重 =====================
   getWrongWeight(id) {
     const detail = Storage.getWrongDetail();
     const sd = Storage.getSpacedData();
@@ -345,7 +307,7 @@ const App = {
     };
   },
 
-  /** 按错误频次排序错题ID */
+  /** 按错误频次排序 */
   getFreqSortedWrongs(wrongIds, sortBy, order) {
     const detail = Storage.getWrongDetail();
     return [...wrongIds].sort((a, b) => {
@@ -355,15 +317,5 @@ const App = {
       const vb = sortBy === 'rate' ? db.wrongRate : db.wrongCount;
       return order === 'asc' ? va - vb : vb - va;
     });
-  },
-
-  /** 获取间隔重复待复习题目（支持题型过滤） */
-  getSpacedQuestions(wrongIds, intensity, typeFilter) {
-    const due = Storage.getDueForReview(typeFilter || null);
-    const intersect = wrongIds.filter(id => due.includes(id));
-    const sd = Storage.getSpacedData();
-    return this.shuffle(intersect)
-      .sort((a, b) => (sd[b]?.weight || 0) - (sd[a]?.weight || 0))
-      .slice(0, intensity * 3);
   }
 };

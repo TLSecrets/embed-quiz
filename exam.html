@@ -12,7 +12,6 @@
       <h1>📝 刷题</h1>
       <p class="subtitle" id="subtitle">加载中...</p>
     </header>
-
     <!-- 进度条 + 实时统计 -->
     <div class="progress-bar"><div class="fill" id="progFill" style="width:0%"></div></div>
     <div class="progress-text">
@@ -20,7 +19,6 @@
       <span id="progDetail">✔0 ✘0</span>
       <span id="progAcc">正确率: -</span>
     </div>
-
     <!-- 工具栏 -->
     <div class="toolbar">
       <div class="filter-group" id="filterGroup">
@@ -48,10 +46,8 @@
         <a href="index.html" class="btn btn-secondary btn-sm">🏠</a>
       </div>
     </div>
-
     <!-- 答题卡缩略图 -->
     <div class="sheet-grid" id="sheetGrid"></div>
-
     <!-- 题目卡片 -->
     <div class="q-card" id="qCard">
       <div class="q-header">
@@ -73,7 +69,6 @@
         <div class="tag-area" id="tagArea"></div>
       </div>
     </div>
-
     <!-- 导航按钮 -->
     <div class="nav-row">
       <button class="btn btn-secondary btn-sm" onclick="prevQ()">⬅ 上一题</button>
@@ -83,7 +78,6 @@
       <button class="btn btn-secondary btn-sm" id="btnSpacedOpts" onclick="toggleSpacedOpts()" style="display:none;">🔁 间隔重复设置</button>
       <span class="nav-info" id="navInfo"></span>
     </div>
-
     <!-- 间隔重复配置面板 -->
     <div class="card" id="spacedPanel" style="display:none;margin-top:10px;">
       <h3>🔁 间隔重复配置</h3>
@@ -99,18 +93,20 @@
         <label style="font-size:.78rem;">插入模式:
           <select id="spInsertMode" onchange="updateSpConfig()"
                   style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:.78rem;background:var(--card);color:var(--text);">
-            <option value="replace">替换模式（总量不变）</option>
             <option value="append">追加模式（总量增加）</option>
+            <option value="replace">替换模式（总量不变）</option>
           </select>
         </label>
         <label style="font-size:.78rem;"><input type="checkbox" id="spEnabled" onchange="updateSpConfig()">
           启用间隔重复</label>
+        <label style="font-size:.78rem;"><input type="checkbox" id="spPreferRecent" onchange="updateSpConfig()">
+          优先本次错题</label>
+        <label style="font-size:.78rem;"><input type="checkbox" id="spPreferAll" checked onchange="updateSpConfig()">
+          优先全部历史错题</label>
       </div>
     </div>
-
     <footer class="footer"><p>⌨️ 快捷键: 1-4选ABCD，←→翻题，Enter下一题</p></footer>
   </div>
-
   <!-- 考试完成弹窗 -->
   <div class="modal-overlay" id="examResultModal" style="display:none;">
     <div class="modal-box">
@@ -122,13 +118,28 @@
       </div>
     </div>
   </div>
-
   <script src="js/question.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/common.js"></script>
   <script src="js/hotkey.js"></script>
   <script src="js/darkmode.js"></script>
   <script>
+    /* =================================================================
+     *  exam.html v3.0 - 流式动态间隔重复出题引擎
+     *
+     *  【核心重构】
+     *  1. 废弃一次性 insertSpacedReviews() 预生成方案
+     *  2. 改为流式管道：每答完N道新题 → 实时从错题池取1道插入队列
+     *  3. 自动跳转仅答对触发；首次答错后永久关闭自动跳转
+     *  4. 题型强隔离：当前刷单选，动态插入的只能是单选错题
+     *  5. 双模式：追加（总题量增加）/ 替换（总题量不变）
+     *
+     *  【流式管道状态变量】
+     *  - newAnsweredCount : 已回答的新题（非复习插入题）数量
+     *  - injectedReviewIds : Set，标记哪些题是动态注入的复习题
+     *  - spacedPool : 错题复习候选池（按遗忘权重降序）
+     *  - autoJumpDisabled : 首次答错后永久禁止自动跳转
+     * ================================================================= */
     Storage.init();
     DarkMode.init();
     Hotkey.init();
@@ -138,14 +149,20 @@
     let qList = [];
     let filterType = 'all';
     let randomMode = false;
-    let currentMode = 'normal';          // normal | review | exam | wrong
-    let showAnswer = false;              // 当前题是否展示答案面板
+    let currentMode = 'normal';       // normal | review | exam | wrong
+    let showAnswer = false;
     let examFinished = false;
     let examStartTime = 0;
-    let examUserAnswers = {};            // 考试模式临时答案 { id: answer }
-    let currentOptMapping = null;        // 当前题目选项映射
-    let autoJumpTimer = null;            // 自动跳转定时器
-    let sessionStats = { done: 0, correct: 0, wrong: 0 }; // 本次练习统计
+    let examUserAnswers = {};
+    let currentOptMapping = null;
+    let autoJumpTimer = null;
+    let sessionStats = { done: 0, correct: 0, wrong: 0 };
+
+    /* ===== v3.0 流式出题状态 ===== */
+    let newAnsweredCount = 0;        // 已回答的新题（非复习注入题）计数
+    let injectedReviewIds = new Set(); // 标记动态注入的复习题 ID
+    let spacedPool = [];             // 错题复习候选池（ID数组）
+    let autoJumpDisabled = false;    // 首次答错后=true，本session永久禁止自动跳转
 
     /* ========== URL 参数恢复 ========== */
     (function() {
@@ -155,18 +172,17 @@
       if (p.get('mode')) currentMode = p.get('mode');
       document.getElementById('modeSelect').value = currentMode;
       document.getElementById('randomToggle').checked = randomMode;
-      // 恢复筛选 UI
       document.querySelectorAll('.filter-btn').forEach(b =>
         b.classList.toggle('active', b.dataset.type === filterType)
       );
-
-      // v2.0: 同步间隔重复配置面板
+      // 同步间隔重复配置面板
       const pref = Storage.getPref();
       document.getElementById('spIntensity').value = pref.spacedIntensity || 3;
       document.getElementById('spThreshold').value = pref.wrongThreshold !== undefined ? pref.wrongThreshold : 50;
       document.getElementById('spInsertMode').value = pref.insertMode || 'append';
       document.getElementById('spEnabled').checked = pref.spacedEnabled || false;
-
+      document.getElementById('spPreferRecent').checked = pref.preferRecentWrongs !== false;
+      document.getElementById('spPreferAll').checked = pref.preferAllHistoryWrongs !== false;
       // 恢复上次进度
       const prog = Storage.getProgress();
       if (prog.filterType === filterType && prog.mode === currentMode && prog.index !== undefined && prog.index < 167) {
@@ -174,14 +190,16 @@
       }
     })();
 
-    /* ========== 题目列表构建 ========== */
+    /* =================================================================
+     *  buildList() v3.0
+     *  仅构建基础新题列表，不进行间隔重复预插入。
+     *  间隔重复错题将在做题过程中动态注入。
+     * ================================================================= */
     function buildList() {
       let list = App.filterQuestions(filterType);
-      const actualType = filterType === 'all' ? null : filterType;
-
       if (randomMode) list = App.shuffle(list);
 
-      // 自定义题量限制
+      // 自定义题量限制（仅对基础列表生效）
       const cnt = parseInt(document.getElementById('customCount').value) || 0;
       if (cnt > 0 && cnt < list.length) list = list.slice(0, cnt);
 
@@ -195,20 +213,78 @@
         if (randomMode) list = App.shuffle(list);
       }
 
-      // v2.0: 间隔重复插入
-      const pref = Storage.getPref();
-      if (pref.spacedEnabled && currentMode !== 'exam' && currentMode !== 'review' && currentMode !== 'wrong') {
-        const intensity = pref.spacedIntensity || 3;
-        const insertMode = pref.insertMode || 'append';
-        list = App.insertSpacedReviews(list, actualType, insertMode, intensity);
+      qList = list;
+
+      // ===== v3.0: 重置流式出题状态 =====
+      newAnsweredCount = 0;
+      injectedReviewIds = new Set();
+      autoJumpDisabled = false;
+
+      // ===== v3.0: 构建间隔重复错题候选池 =====
+      if (currentMode === 'normal' && (Storage.getPref().spacedEnabled)) {
+        const typeFilter = filterType === 'all' ? null : filterType;
+        const excludeIds = new Set(qList.map(q => q.id));
+        spacedPool = App.getSpacedReviewPool(typeFilter, excludeIds);
+      } else {
+        spacedPool = [];
       }
 
-      qList = list;
       if (qIndex >= qList.length) qIndex = 0;
       if (qList.length === 0) qIndex = 0;
     }
 
-    /* ========== 渲染 ========== */
+    /* =================================================================
+     *  injectSpacedReview() v3.0 核心——动态流式插入
+     *
+     *  触发时机：用户答完一道"新题"后调用
+     *  逻辑：
+     *    1. 检查 newAnsweredCount 是否达到插入间隔
+     *    2. 从 spacedPool 中 pop 一道最高权重错题
+     *    3. 按 insertMode 决定追加或替换到 qList
+     *    4. 标记 injectedReviewIds 防止重复计数
+     *
+     *  这是"流式出题"替代"预生成"的关键函数。
+     *  错题在用户做题过程中实时穿插，实现艾宾浩斯效应。
+     * ================================================================= */
+    function injectSpacedReview() {
+      // 仅常规刷题模式下生效
+      if (currentMode !== 'normal') return;
+      const pref = Storage.getPref();
+      if (!pref.spacedEnabled) return;
+      const intensity = pref.spacedIntensity || 3;
+      const insertMode = pref.insertMode || 'append';
+
+      // intensity→间隔：强度越高，间隔越小（1=每10道/10=每1道各插1道）
+      const insertEvery = Math.max(1, Math.floor(10 / intensity));
+
+      // 当前已回答新题数是否达到插入点？
+      if (!App.shouldInsertSpaced(newAnsweredCount, insertEvery)) return;
+
+      // 从候选池取出一道最高权重复习题
+      const reviewQ = App.popNextSpacedQ(spacedPool);
+      if (!reviewQ) return; // 池已空
+
+      // 标记为复习注入题（后续不再计入 newAnsweredCount）
+      injectedReviewIds.add(reviewQ.id);
+
+      if (insertMode === 'replace') {
+        // 替换模式：用复习题替换下一道待出的新题，总量不变
+        if (qIndex + 1 < qList.length) {
+          qList[qIndex + 1] = reviewQ;
+        }
+      } else {
+        // 追加模式：在当前题之后插入复习题，队列增长
+        qList.splice(qIndex + 1, 0, reviewQ);
+      }
+
+      // 刷新答题卡（因 qList 已变化）
+      renderSheet();
+    }
+
+    /* =================================================================
+     *  render() - 渲染当前题目
+     *  切题时强制清空答案面板 + 取消自动跳转定时器
+     * ================================================================= */
     function render() {
       clearAutoJump();
 
@@ -222,7 +298,6 @@
 
       const q = qList[qIndex];
 
-      // 副标题
       const modeNames = { normal: '常规刷题', review: '背题浏览', exam: '模拟考试', wrong: '错题训练' };
       document.getElementById('subtitle').textContent =
         App.getTypeName(filterType) + ' · ' + qList.length + '题 · ' + (modeNames[currentMode] || currentMode);
@@ -232,7 +307,7 @@
       document.getElementById('qTitle').textContent = q.title;
       App.setImageSrc(document.getElementById('qImg'), q.img);
 
-      // v2.0: 选项随机打乱（考试模式下也打乱）
+      // 选项随机打乱（每道题独立随机）
       const shuffled = App.shuffleOptionsIfEnabled(q);
       currentOptMapping = shuffled;
 
@@ -252,7 +327,7 @@
         filterType, mode: currentMode, index: qIndex, random: randomMode
       });
 
-      // 模式 UI 控制
+      // ===== 模式 UI 控制 =====
       if (currentMode === 'exam') {
         document.getElementById('btnToggleAns').style.display = 'none';
         document.getElementById('btnFinishExam').style.display = 'inline-block';
@@ -280,24 +355,33 @@
       }
     }
 
-    /* ========== 答题区域渲染 v2.0 ========== */
+    /* ========== 答题区域渲染 v3.0 (修复打乱标签后选中态映射) ========== */
     function renderAnswerArea(q, shuffled) {
       const area = document.getElementById('qAnswerArea');
       let userAns = '';
+      // 注：考试模式的 examUserAnswers 中存的是原始标签（已在 saveAnswerLocal 中还原）
+      // 普通模式的 Storage 中存的也是原始标签
       if (currentMode === 'exam') {
         userAns = examUserAnswers[q.id] || '';
       } else {
         userAns = Storage.getAnswer(q.id) || '';
       }
 
+      // v3.0 关键修复：存储的答案是原始标签(A/B/C/D)，但 UI 显示的是打乱后的新标签
+      // 需要用 shuffled.mapping 将存储的原始答案映射为新标签，才能正确标记选中态
+      // shuffled.mapping: { 原始标签 → 新标签 }，如 { A:'B', B:'A', C:'D', D:'C' }
+      const mapping = shuffled.mapping || {};
+
       area.innerHTML = '';
 
       switch (q.type) {
         case 'radio': {
+          // 单选：原始答案如"C" → 新标签如"D"
+          const mappedAns = mapping[userAns] || userAns;
           let html = '<ul class="options-list">';
           shuffled.options.forEach((opt, i) => {
             const label = shuffled.labels[i];
-            const selected = (userAns === label);
+            const selected = (mappedAns === label);
             html += `<li class="opt-item${selected ? ' selected' : ''}" data-opt="${label}" onclick="selOpt(this,'${label}')">
               <span class="opt-letter">${label}</span>
               <span class="opt-text">${opt}</span>
@@ -308,11 +392,14 @@
           break;
         }
         case 'checkbox': {
+          // 多选：原始答案如"A,C" → 分别映射为新标签集合
+          const rawSet = new Set(userAns.split(',').map(s => s.trim().toUpperCase()).filter(Boolean));
+          const newLabelSet = new Set();
+          rawSet.forEach(orig => { if (mapping[orig]) newLabelSet.add(mapping[orig]); });
           let html = '<ul class="options-list">';
-          const uSet = new Set(userAns.split(',').map(s => s.trim().toUpperCase()).filter(Boolean));
           shuffled.options.forEach((opt, i) => {
             const label = shuffled.labels[i];
-            const selected = uSet.has(label);
+            const selected = newLabelSet.has(label);
             html += `<li class="opt-item${selected ? ' selected' : ''}" data-opt="${label}" onclick="selChk(this,'${label}')">
               <span class="opt-letter">${label}</span>
               <span class="opt-text">${opt}</span>
@@ -340,7 +427,7 @@
       }
     }
 
-    /* ========== 答案展示 v2.0（仅当 showAnswer=true） ========== */
+    /* ========== 答案展示 ========== */
     function renderAnswerBox(q) {
       const box = document.getElementById('answerBox');
       if (!showAnswer || currentMode === 'exam') {
@@ -348,23 +435,19 @@
         return;
       }
       box.style.display = 'block';
-      const userAnsRaw = currentMode === 'exam'
+      const userAns = currentMode === 'exam'
         ? (examUserAnswers[q.id] || '')
         : (Storage.getAnswer(q.id) || '');
-      // v2.0: 还原打乱后的用户答案为原始答案以比对
-      const userAns = currentOptMapping
-        ? App.restoreOriginalAnswer(userAnsRaw, currentOptMapping.reverseMapping)
-        : userAnsRaw;
       const isCorrect = Storage.checkCorrect(q.id, userAns);
       const refDisplay = App.formatAnswer(q);
       box.innerHTML = `
         <div><span class="ref">📌 参考答案：</span>${refDisplay}</div>
-        <div style="margin-top:6px;">${userAns ? '<span class="user">你的答案：' + userAnsRaw + '</span>' : '<span style="color:var(--text2);">你未作答</span>'}</div>
+        <div style="margin-top:6px;">${userAns ? '<span class="user">你的答案：' + userAns + '</span>' : '<span style="color:var(--text2);">你未作答</span>'}</div>
         <div style="margin-top:4px;font-weight:600;color:${isCorrect ? 'var(--success)' : 'var(--danger)'};">
           ${userAns ? (isCorrect ? '✅ 回答正确' : '❌ 回答错误') : '⚠️ 未作答'}</div>`;
     }
 
-    /* ========== 笔记 & 标签 & 收藏 v2.0（独立持久化） ========== */
+    /* ========== 笔记 & 标签 & 收藏 ========== */
     function renderNoteTag(q) {
       if (currentMode === 'exam') return;
       const area = document.getElementById('noteTagArea');
@@ -390,80 +473,29 @@
       if (currentMode === 'exam') return;
       const ans = Storage.getAnswer(q.id);
       if (!ans) return;
-      // v2.0: 还原打乱后的答案
-      const origAns = currentOptMapping
-        ? App.restoreOriginalAnswer(ans, currentOptMapping.reverseMapping)
-        : ans;
-      if (Storage.checkCorrect(q.id, origAns)) {
+      if (Storage.checkCorrect(q.id, ans)) {
         card.classList.add('correct');
       } else {
         card.classList.add('wrong');
       }
     }
 
-    /* ========== 实时统计 ========== */
+    /* ========== 实时统计 v3.0 ========== */
     function updateStats() {
       let done = 0, correct = 0, wrong = 0;
       qList.forEach(q => {
-        let ans = '';
-        if (currentMode === 'exam') {
-          ans = examUserAnswers[q.id] || '';
-        } else {
-          ans = Storage.getAnswer(q.id) || '';
-        }
-        if (ans) {
+        const a = currentMode === 'exam' ? (examUserAnswers[q.id] || '') : (Storage.getAnswer(q.id) || '');
+        if (a) {
           done++;
-          if (currentMode !== 'exam') {
-            // 普通模式用持久化判定
-            const origAns = App.restoreOriginalAnswer(
-              ans,
-              (App.shuffleOptionsIfEnabled(q)).reverseMapping
-            );
-            if (Storage.checkCorrect(q.id, ans.includes(',') ? ans : origAns)) correct++;
-            else wrong++;
-          } else {
-            // 考试模式临时判定
-            if (Storage.checkCorrect(q.id, ans)) correct++;
-            else wrong++;
-          }
+          if (Storage.checkCorrect(q.id, a)) correct++;
+          else wrong++;
         }
       });
-
-      // 简化统计：用 Storage 判定
-      let done2 = 0, corr2 = 0, w2 = 0;
-      qList.forEach(q => {
-        const a = currentMode === 'exam' ? (examUserAnswers[q.id] || '') : (Storage.getAnswer(q.id) || '');
-        if (a) {
-          done2++;
-          const orig = currentMode === 'exam' ? a : App.restoreOriginalAnswer(a,
-            (App.shuffleOptionsIfEnabled(q)).reverseMapping
-          );
-          if (Storage.checkCorrect(q.id, currentMode === 'exam' ? a : orig)) corr2++;
-          else w2++;
-        }
-      });
-
-      // 更简洁的实现：用 submitAnswer 的实际结果
-      let _done = 0, _corr = 0, _w = 0;
-      qList.forEach(q => {
-        const a = currentMode === 'exam' ? (examUserAnswers[q.id] || '') : (Storage.getAnswer(q.id) || '');
-        if (a) {
-          _done++;
-          let checkAns = a;
-          if (currentMode !== 'exam') {
-            // For normal/review/wrong, the stored answer is already the original label answer
-            checkAns = a;
-          }
-          if (Storage.checkCorrect(q.id, checkAns)) _corr++;
-          else _w++;
-        }
-      });
-
-      sessionStats = { done: _done, correct: _corr, wrong: _w };
-      document.getElementById('progText').textContent = _done + '/' + qList.length;
-      document.getElementById('progDetail').textContent = '✔' + _corr + ' ✘' + _w;
+      sessionStats = { done, correct, wrong };
+      document.getElementById('progText').textContent = done + '/' + qList.length;
+      document.getElementById('progDetail').textContent = '✔' + correct + ' ✘' + wrong;
       document.getElementById('progAcc').textContent =
-        '正确率: ' + (_done > 0 ? (_corr / _done * 100).toFixed(1) + '%' : '-');
+        '正确率: ' + (done > 0 ? (correct / done * 100).toFixed(1) + '%' : '-');
     }
 
     /* ========== 答题卡 ========== */
@@ -483,45 +515,78 @@
       });
     }
 
-    /* ========== 答题动作 v2.0（含自动跳转） ========== */
+    /* =================================================================
+     *  saveAnswerLocal() v3.0 —— 答题核心入口
+     *
+     *  流程：
+     *  1. 还原打乱选项→原始标签
+     *  2. 提交判分（持久化）
+     *  3. 显示答案面板 + 红绿标记
+     *  4. 新题计数+1（复习注入题不计入）
+     *  5. 触发动态流式插入 injectSpacedReview()
+     *  6. 答对→自动跳转；答错→永久关闭自动跳转
+     * ================================================================= */
     function saveAnswerLocal(val) {
       const q = qList[qIndex];
       if (!q) return;
 
       if (currentMode === 'exam') {
-        // 考试模式：仅暂存，不判分
-        examUserAnswers[q.id] = val;
+        // 考试模式：还原打乱答案后暂存
+        let origVal = val;
+        if (currentOptMapping && (q.type === 'radio' || q.type === 'checkbox')) {
+          origVal = App.restoreOriginalAnswer(val, currentOptMapping.reverseMapping);
+        }
+        examUserAnswers[q.id] = origVal;
         render();
         return;
       }
 
-      // v2.0: 先还原打乱后的答案为原始答案
+      // 还原用户在新标签下的答案→原始标签
       let origVal = val;
       if (currentOptMapping && (q.type === 'radio' || q.type === 'checkbox')) {
         origVal = App.restoreOriginalAnswer(val, currentOptMapping.reverseMapping);
       }
 
-      // 提交判分
+      // 提交判分并持久化
       const result = Storage.submitAnswer(q.id, origVal);
+      const isCorrect = result.correct;
 
+      // 常规/错题模式下显示答案面板
       if (currentMode === 'normal' || currentMode === 'wrong') {
         showAnswer = true;
         document.getElementById('btnToggleAns').textContent = '🙈 隐藏答案';
       }
 
+      // 重新渲染（显示红绿标记+答案面板）
       render();
 
-      // v2.0: 自动跳转（常规/错题模式）
+      // ===== v3.0 流式管道：新题计数 =====
+      // 仅非注入复习题计入 newAnsweredCount
+      if (!injectedReviewIds.has(q.id)) {
+        newAnsweredCount++;
+      }
+
+      // ===== v3.0 流式管道：动态插入间隔复习错题 =====
+      injectSpacedReview();
+
+      // ===== v3.0 自动跳转：仅答对触发 =====
+      clearAutoJump();
       if (currentMode === 'normal' || currentMode === 'wrong') {
-        const pref = Storage.getPref();
-        const delay = pref.autoJumpDelay || 1200;
-        if (delay > 0 && qIndex < qList.length - 1) {
-          autoJumpTimer = setTimeout(() => {
-            qIndex++;
-            showAnswer = false;
-            document.getElementById('btnToggleAns').textContent = '👁 显示答案';
-            render();
-          }, delay);
+        if (isCorrect && !autoJumpDisabled) {
+          // 答对 + 未禁用 → 延时后自动跳转
+          const delay = Storage.getPref().autoJumpDelay || 1200;
+          if (delay > 0 && qIndex < qList.length - 1) {
+            autoJumpTimer = setTimeout(() => {
+              qIndex++;
+              showAnswer = false;
+              document.getElementById('btnToggleAns').textContent = '👁 显示答案';
+              document.getElementById('answerBox').style.display = 'none';
+              render();
+            }, delay);
+          }
+        } else if (!isCorrect) {
+          // 答错 → 永久关闭自动跳转（本session内）
+          autoJumpDisabled = true;
         }
       }
     }
@@ -553,8 +618,16 @@
       saveAnswerLocal(opt);
     };
 
-    /* ========== 导航 v2.0（切题清答案面板） ========== */
+    /* =================================================================
+     *  导航 v3.0
+     *  切题时强制清空：
+     *  - 自动跳转定时器
+     *  - 答案展示面板
+     *  - showAnswer 状态
+     *  确保不残留上一题的答案/解析
+     * ================================================================= */
     window.prevQ = function() {
+      clearAutoJump();
       if (qIndex > 0) {
         qIndex--;
         if (currentMode !== 'review') showAnswer = false;
@@ -590,7 +663,7 @@
       render();
     };
 
-    /* ========== 笔记 / 标签 / 收藏 v2.0 ========== */
+    /* ========== 笔记 / 标签 / 收藏 ========== */
     window.saveNote = function() {
       const q = qList[qIndex];
       const v = document.getElementById('noteInput').value.trim();
@@ -656,13 +729,17 @@
       const threshold = parseInt(document.getElementById('spThreshold').value) || 50;
       const insertMode = document.getElementById('spInsertMode').value;
       const enabled = document.getElementById('spEnabled').checked;
+      const preferRecent = document.getElementById('spPreferRecent').checked;
+      const preferAll = document.getElementById('spPreferAll').checked;
       Storage.setPref({
         spacedIntensity: Math.max(1, Math.min(10, intensity)),
         wrongThreshold: Math.max(0, Math.min(100, threshold)),
         insertMode: insertMode,
-        spacedEnabled: enabled
+        spacedEnabled: enabled,
+        preferRecentWrongs: preferRecent,
+        preferAllHistoryWrongs: preferAll
       });
-      // 重新构建列表
+      // 重新构建列表（重置流式状态）
       buildList();
       qIndex = 0;
       render();
@@ -702,8 +779,6 @@
       const unanswered = total - correct - wrong;
       const acc = total > 0 ? ((correct / total) * 100).toFixed(1) : '0';
       Storage.addSessionStat(acc, total, correct, wrong);
-
-      // 存储报告
       localStorage.setItem('eq_last_report', JSON.stringify({
         total, correct, wrong, unanswered,
         accuracy: acc, elapsed,
@@ -713,12 +788,9 @@
         mode: 'exam',
         filterType
       }));
-
       document.getElementById('examResultText').innerHTML =
         `总题数：${total}<br>正确：${correct} | 错误：${wrong} | 未答：${unanswered}<br>正确率：${acc}%<br>耗时：${Math.floor(elapsed/60)}分${elapsed%60}秒`;
       document.getElementById('examResultModal').style.display = 'flex';
-
-      // 更新按钮
       document.getElementById('btnFinishExam').style.display = 'none';
     };
 
