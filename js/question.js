@@ -6,7 +6,7 @@ const questionList = [
   {
     id: 1,
     type: 'radio',
-    title: 'Makefile 文件通过什么命令执行。',
+    title: `Makefile 文件通过什么命令执行。`,
     img: '',
     options: ['make', 'install', 'make install', 'execute'],
     answer: 'A',
@@ -17,7 +17,7 @@ const questionList = [
   {
     id: 2,
     type: 'radio',
-    title: '下列关于套接字编程基本函数说法错误的是（ ）。',
+    title: `下列关于套接字编程基本函数说法错误的是（ ）。`,
     img: '',
     options: ['socket() 函数用于建立一个套接字和一条通信路线的端点', 'recv（）函数形参int backlog系统默认值为5', 'socket（） 函数有3个形参，函数返回值类型 int，-1表示出错，成功返回非负的套接字描述符', '在TCP中，sendto 和recvfrom 这两个函数的作用与send() 和recv（）函数作用等同'],
     answer: 'B',
@@ -28,9 +28,9 @@ const questionList = [
   {
     id: 3,
     type: 'radio',
-    title: '哪种套接字提供可靠的、面向连接的通信流（ ）。',
+    title: `哪种套接字提供可靠的、面向连接的通信流（ ）。`,
     img: '',
-    options: ['SOCK\\_STREAM', 'SOCK\\_DGRAM', 'SOCK\\_RAW', '以上都不对'],
+    options: ['SOCK_STREAM', 'SOCK_DGRAM', 'SOCK_RAW', '以上都不对'],
     answer: 'A',
     tags: [],
     collect: false,
@@ -39,7 +39,7 @@ const questionList = [
   {
     id: 4,
     type: 'radio',
-    title: '下面能实现把端口号从本机字节顺序转换到网络字节顺序的函数是',
+    title: `下面能实现把端口号从本机字节顺序转换到网络字节顺序的函数是`,
     img: '',
     options: ['htons( )', 'htonl( )', 'ntohl( )', 'ntohs'],
     answer: 'A',
@@ -50,7 +50,7 @@ const questionList = [
   {
     id: 5,
     type: 'radio',
-    title: '信号量的特征不包括以下哪一项',
+    title: `信号量的特征不包括以下哪一项`,
     img: '',
     options: ['以原子方式工作', '实现两线程的同步操作', '用于保护临界区', '信号量的值为0或1'],
     answer: 'D',
@@ -61,7 +61,7 @@ const questionList = [
   {
     id: 6,
     type: 'radio',
-    title: '在linux系统中，有关线程说法正确的是（ ）。',
+    title: `在linux系统中，有关线程说法正确的是（ ）。`,
     img: '',
     options: ['线程是程序的一次执行过程', '线程有自己独立的地址空间', '线程不能独立执行，必须依存在进程中，由进程提供多个线程执行控制', '线程是系统进行资源分配和调度的一个独立单位'],
     answer: 'C',
@@ -72,7 +72,7 @@ const questionList = [
   {
     id: 7,
     type: 'radio',
-    title: '下面哪项对进程标识的描述是错误的',
+    title: `下面哪项对进程标识的描述是错误的`,
     img: '',
     options: ['PID唯一地标识一个进程', 'PPID唯一地标识一个进程', 'PID是非零的正整数', 'PPID是非零的正整数'],
     answer: 'B',
@@ -83,7 +83,7 @@ const questionList = [
   {
     id: 8,
     type: 'radio',
-    title: '以二进制形式往文件里写数据应该用的函数是',
+    title: `以二进制形式往文件里写数据应该用的函数是`,
     img: '',
     options: ['fputs', 'fputc', 'puts', 'fwrite'],
     answer: 'D',
@@ -94,7 +94,7 @@ const questionList = [
   {
     id: 9,
     type: 'radio',
-    title: '下列哪个套接字函数不能用于服务器程序（ ）。',
+    title: `下列哪个套接字函数不能用于服务器程序（ ）。`,
     img: '',
     options: ['socket', 'connect', 'send', 'accept'],
     answer: 'B',
@@ -105,9 +105,9 @@ const questionList = [
   {
     id: 10,
     type: 'radio',
-    title: '下列不属于POSIX互斥锁相关函数的是：',
+    title: `下列不属于POSIX互斥锁相关函数的是：`,
     img: '',
-    options: ['int pthread\\_mutex\\_destroy(pthread\\_mutex\\_t \\* mutex)', 'int pthread\\_mutex\\_lock(pthread\\_mutex\\_t \\*mutex)', 'int pthread\\_mutex\\_unlock(pthread\\_mutex\\_t \\* mutex)', 'int pthread\\_mutex\\_create(pthread\\_mutex\\_t \\*mutex)'],
+    options: ['int pthread_mutex_destroy(pthread_mutex_t * mutex)', 'int pthread_mutex_lock(pthread_mutex_t *mutex)', 'int pthread_mutex_unlock(pthread_mutex_t * mutex)', 'int pthread_mutex_create(pthread_mutex_t *mutex)'],
     answer: 'D',
     tags: [],
     collect: false,
@@ -116,9 +116,9 @@ const questionList = [
   {
     id: 11,
     type: 'radio',
-    title: '（ ）函数用来初始化一个互斥锁',
+    title: `（ ）函数用来初始化一个互斥锁`,
     img: '',
-    options: ['pthread\\_mutex\\_init', 'pthread\\_mutex\\_lock', 'pthread\\_mutex\\_begin', 'pthread\\_mutex\\_create'],
+    options: ['pthread_mutex_init', 'pthread_mutex_lock', 'pthread_mutex_begin', 'pthread_mutex_create'],
     answer: 'A',
     tags: [],
     collect: false,
@@ -127,9 +127,9 @@ const questionList = [
   {
     id: 12,
     type: 'radio',
-    title: '下列说法错误的是（ ）。',
+    title: `下列说法错误的是（ ）。`,
     img: '',
-    options: ['pthread\\_join函数是一个线程阻塞的函数。', '线程函数可以定义为  void \\* mythread( void \\* args){   }。', '使用线程相关函数，需要包含头文件pthread.h。', '进程的上下文切换的开销比线程上下文切换小很多'],
+    options: ['pthread_join函数是一个线程阻塞的函数。', '线程函数可以定义为  void * mythread( void * args){   }。', '使用线程相关函数，需要包含头文件pthread.h。', '进程的上下文切换的开销比线程上下文切换小很多'],
     answer: 'D',
     tags: [],
     collect: false,
@@ -138,9 +138,9 @@ const questionList = [
   {
     id: 13,
     type: 'radio',
-    title: '下述Linux下多线程编程常用的pthread库提供的函数名和意义，说法不正确的是',
+    title: `下述Linux下多线程编程常用的pthread库提供的函数名和意义，说法不正确的是`,
     img: '',
-    options: ['pthread\\_create 创建一个线程', 'pthread\\_join用来等待一个线程的结束', 'exit用来结束一个线程', 'pthread\\_cancel 函数用来向另一个线程发送“终止执行”的信号'],
+    options: ['pthread_create 创建一个线程', 'pthread_join用来等待一个线程的结束', 'exit用来结束一个线程', 'pthread_cancel 函数用来向另一个线程发送“终止执行”的信号'],
     answer: 'C',
     tags: [],
     collect: false,
@@ -149,9 +149,9 @@ const questionList = [
   {
     id: 14,
     type: 'radio',
-    title: '对线程函数来说，说法正确的是',
+    title: `对线程函数来说，说法正确的是`,
     img: '',
-    options: ['pthread\\_join 函数用于结束线程，其参数是线程的返回值', 'pthread\\_exit 函数用于退出另一个线程，参数是另一个线程的ID', 'pthread\\_cancel 函数用于取消当前线程的执行，即退出本线程', 'pthread\\_create 中参数arg是传递给start\\_routine函数的参数'],
+    options: ['pthread_join 函数用于结束线程，其参数是线程的返回值', 'pthread_exit 函数用于退出另一个线程，参数是另一个线程的ID', 'pthread_cancel 函数用于取消当前线程的执行，即退出本线程', 'pthread_create 中参数arg是传递给start_routine函数的参数'],
     answer: 'D',
     tags: [],
     collect: false,
@@ -160,9 +160,9 @@ const questionList = [
   {
     id: 15,
     type: 'radio',
-    title: '创建子线程使用的函数为',
+    title: `创建子线程使用的函数为`,
     img: '',
-    options: ['pthread\\_create', 'pthread\\_join', 'pthread\\_exit', 'create\\_pthread'],
+    options: ['pthread_create', 'pthread_join', 'pthread_exit', 'create_pthread'],
     answer: 'A',
     tags: [],
     collect: false,
@@ -171,7 +171,7 @@ const questionList = [
   {
     id: 16,
     type: 'radio',
-    title: '创建或打开信号量的函数为',
+    title: `创建或打开信号量的函数为`,
     img: '',
     options: ['shmget', 'msgget', 'semget', '以上都不对'],
     answer: 'C',
@@ -182,7 +182,7 @@ const questionList = [
   {
     id: 17,
     type: 'radio',
-    title: '下列进程间通信方式中速度最快的是',
+    title: `下列进程间通信方式中速度最快的是`,
     img: '',
     options: ['信号', '管道', '共享内存', '信息队列'],
     answer: 'C',
@@ -193,7 +193,7 @@ const questionList = [
   {
     id: 18,
     type: 'radio',
-    title: '一般情况下，STDOUT\\_FILENO对应的文件描述符为',
+    title: `一般情况下，STDOUT_FILENO对应的文件描述符为`,
     img: '',
     options: ['-1', '0', '1', '2'],
     answer: 'C',
@@ -204,7 +204,7 @@ const questionList = [
   {
     id: 19,
     type: 'radio',
-    title: '下列哪个是不带缓存的',
+    title: `下列哪个是不带缓存的`,
     img: '',
     options: ['stdin', 'stdout', 'stderr', '都不是'],
     answer: 'C',
@@ -215,7 +215,7 @@ const questionList = [
   {
     id: 20,
     type: 'radio',
-    title: '下面对bind( )函数的功能描述错误的是（ ）。',
+    title: `下面对bind( )函数的功能描述错误的是（ ）。`,
     img: '',
     options: ['该函数仅适用于流式套接字', '该函数用来将套接字绑定到指定的网络地址上', '该函数一般在connect（）或 listen 函数调用前使用', '在客户机端使用的套接字一般不必绑定，除非要指定它使用特定的网络地址'],
     answer: 'A',
@@ -226,7 +226,7 @@ const questionList = [
   {
     id: 21,
     type: 'radio',
-    title: 'ftp 属于 TCP/IP参考模型（ ）层协议。',
+    title: `ftp 属于 TCP/IP参考模型（ ）层协议。`,
     img: '',
     options: ['应用层', '传输层', '网络层', '网络接口层'],
     answer: 'A',
@@ -237,9 +237,9 @@ const questionList = [
   {
     id: 22,
     type: 'radio',
-    title: '对于 int shmctl(int shmid,int cmd,struct shmid\\_ds \\* buf) 若要删除内存对象 cmd 取值为',
+    title: `对于 int shmctl(int shmid,int cmd,struct shmid_ds * buf) 若要删除内存对象 cmd 取值为`,
     img: '',
-    options: ['IPC\\_STAT', 'IPC\\_SET', 'IPC\\_RMID', 'IPC\\_RM'],
+    options: ['IPC_STAT', 'IPC_SET', 'IPC_RMID', 'IPC_RM'],
     answer: 'C',
     tags: [],
     collect: false,
@@ -248,7 +248,7 @@ const questionList = [
   {
     id: 23,
     type: 'radio',
-    title: '创建或打开共享内存使用的函数为',
+    title: `创建或打开共享内存使用的函数为`,
     img: '',
     options: ['msgget', 'shmget', 'semget', '以上都不对'],
     answer: 'B',
@@ -259,7 +259,7 @@ const questionList = [
   {
     id: 24,
     type: 'radio',
-    title: '下列进程间通信中可以实现同步互斥的是',
+    title: `下列进程间通信中可以实现同步互斥的是`,
     img: '',
     options: ['信号', '消息队列', '套接字', '信号量'],
     answer: 'D',
@@ -270,7 +270,7 @@ const questionList = [
   {
     id: 25,
     type: 'radio',
-    title: '创建有名管道使用的函数是（ ）。',
+    title: `创建有名管道使用的函数是（ ）。`,
     img: '',
     options: ['pipe', 'create', 'mkfifo', 'fifo'],
     answer: 'C',
@@ -281,7 +281,7 @@ const questionList = [
   {
     id: 26,
     type: 'radio',
-    title: '下列对无名管道描述错误的是（）。',
+    title: `下列对无名管道描述错误的是（）。`,
     img: '',
     options: ['写操作不能保证原子性', '有固定的读端和写端', '可以使用lseek函数', '只存在与内存中'],
     answer: 'C',
@@ -292,7 +292,7 @@ const questionList = [
   {
     id: 27,
     type: 'radio',
-    title: '标准出错stderr产生时，标准I/O典型地使用下面哪项缓冲方式',
+    title: `标准出错stderr产生时，标准I/O典型地使用下面哪项缓冲方式`,
     img: '',
     options: ['全缓冲', '行缓冲', '无缓冲', '帧缓冲'],
     answer: 'C',
@@ -303,7 +303,7 @@ const questionList = [
   {
     id: 28,
     type: 'radio',
-    title: '在vi 编辑器里中末行模式下保存修改的命令是（）。',
+    title: `在vi 编辑器里中末行模式下保存修改的命令是（）。`,
     img: '',
     options: ['q!', 'w', 'q', 'wq'],
     answer: 'D',
@@ -314,7 +314,7 @@ const questionList = [
   {
     id: 29,
     type: 'radio',
-    title: '读入当前目录下的myMakefile 文件作为 makefile,输入命令为',
+    title: `读入当前目录下的myMakefile 文件作为 makefile,输入命令为`,
     img: '',
     options: ['make -f myMakefile', 'make -C myMakefile', 'make myMakefile', 'make -I myMakefile'],
     answer: 'A',
@@ -325,7 +325,7 @@ const questionList = [
   {
     id: 30,
     type: 'radio',
-    title: '将共享内存映射到进程的虚拟地址空间里使用的函数是',
+    title: `将共享内存映射到进程的虚拟地址空间里使用的函数是`,
     img: '',
     options: ['shmat', 'shmget', 'shmctl', 'semop'],
     answer: 'A',
@@ -336,7 +336,7 @@ const questionList = [
   {
     id: 31,
     type: 'radio',
-    title: 'make 命令确定文件是否应编译的依据是',
+    title: `make 命令确定文件是否应编译的依据是`,
     img: '',
     options: ['文件生成时间', '文件生成大小', '文件类型', '文件属性'],
     answer: 'A',
@@ -347,7 +347,7 @@ const questionList = [
   {
     id: 32,
     type: 'radio',
-    title: '在GDB调试过程中，使用下面哪项命令设置断点，其中m代表行号（）。',
+    title: `在GDB调试过程中，使用下面哪项命令设置断点，其中m代表行号（）。`,
     img: '',
     options: ['b  m', 'c  m', 'n  m', 's  m'],
     answer: 'A',
@@ -358,7 +358,7 @@ const questionList = [
   {
     id: 33,
     type: 'radio',
-    title: '为了使用生成的目标文件能够用于gdb调试，在编译时gcc应使用（ ）选项。',
+    title: `为了使用生成的目标文件能够用于gdb调试，在编译时gcc应使用（ ）选项。`,
     img: '',
     options: ['-c', '-w', '-g', '-o'],
     answer: 'C',
@@ -369,7 +369,7 @@ const questionList = [
   {
     id: 34,
     type: 'radio',
-    title: 'cd命令可以改变用户的当前目录，当用户键入命令“cd”并按Enter键后（ ）。',
+    title: `cd命令可以改变用户的当前目录，当用户键入命令“cd”并按Enter键后（ ）。`,
     img: '',
     options: ['当前目录改为根目录', '当前目录不变，屏幕显示当前目录', '当前目录改为用户主目录', '当前目录改为上一级目录'],
     answer: 'C',
@@ -380,9 +380,9 @@ const questionList = [
   {
     id: 35,
     type: 'radio',
-    title: '以下叙述错误的是',
+    title: `以下叙述错误的是`,
     img: '',
-    options: ['in\\_addr 结构中的IP地址是网络字节顺序存储的', 'in\\_addr 结构可以同时存储3种不同方式表示的IPv4地址', 'sockaddr\\_in 结构变量可以保持地址族、端口号和IP地址三种地址信息', 'sockaddr\\_in 结构变量与sockaddr 结构变量中存储的内容与顺序完全一致'],
+    options: ['in_addr 结构中的IP地址是网络字节顺序存储的', 'in_addr 结构可以同时存储3种不同方式表示的IPv4地址', 'sockaddr_in 结构变量可以保持地址族、端口号和IP地址三种地址信息', 'sockaddr_in 结构变量与sockaddr 结构变量中存储的内容与顺序完全一致'],
     answer: 'B',
     tags: [],
     collect: false,
@@ -391,7 +391,7 @@ const questionList = [
   {
     id: 36,
     type: 'radio',
-    title: '下面哪项是对进程概念的错误描述',
+    title: `下面哪项是对进程概念的错误描述`,
     img: '',
     options: ['进程是一个独立的可调度的活动', '进程是一个抽象实体，当它执行某个任务时，将要分配和释放各种资源', '进程是可以并行执行的计算部分', '进程是保存在磁盘上的指令的有序集合'],
     answer: 'D',
@@ -402,7 +402,7 @@ const questionList = [
   {
     id: 37,
     type: 'radio',
-    title: '下面哪项对进程的描述是错误的',
+    title: `下面哪项对进程的描述是错误的`,
     img: '',
     options: ['进程是一个静态的概念', '进程包括动态创建、调度和消亡的整个过程', '进程是程序执行和资源管理的最小单位', '当用户在系统中键入命令执行一个程序的时候，它将启动一个进程'],
     answer: 'A',
@@ -413,7 +413,7 @@ const questionList = [
   {
     id: 38,
     type: 'radio',
-    title: 'open函数调用错误时，函数返回值为',
+    title: `open函数调用错误时，函数返回值为`,
     img: '',
     options: ['-1', '0', '1', '2'],
     answer: 'A',
@@ -424,7 +424,7 @@ const questionList = [
   {
     id: 39,
     type: 'radio',
-    title: '下面哪些与GDB相关的说法是错误的是',
+    title: `下面哪些与GDB相关的说法是错误的是`,
     img: '',
     options: ['gdb 能调试可执行文件', 'gdb 能调试源代码', 'gdb对编译过程有要求', 'gdb 支持交叉调试'],
     answer: 'B',
@@ -435,7 +435,7 @@ const questionList = [
   {
     id: 40,
     type: 'radio',
-    title: 'fread（）返回值得含义是',
+    title: `fread（）返回值得含义是`,
     img: '',
     options: ['读取的字节数', '读取的对象数', '缓冲区的首地址', '0'],
     answer: 'B',
@@ -446,7 +446,7 @@ const questionList = [
   {
     id: 41,
     type: 'radio',
-    title: '（）函数可从文件中读取指定长度的数据到内存中。',
+    title: `（）函数可从文件中读取指定长度的数据到内存中。`,
     img: '',
     options: ['open', 'read', 'write', 'creat'],
     answer: 'B',
@@ -457,7 +457,21 @@ const questionList = [
   {
     id: 42,
     type: 'radio',
-    title: '文件 src.c 大小为 65kb，经过下列程序分析des.c文件大小（ ）。 ....... ........ int srcfd,desfd; srcfd = open("src.c",O\\_RDONLY); desfd =open("des.c",O\\_RDWR); char buffer[64]; int num = 0; while( (num = read(srcfd,buffer,64)) >‌ 0) { write(desfd,buffer,64); } close(srcfd); close(desfd);',
+    title: `文件 src.c 大小为 65kb，经过下列程序分析des.c文件大小（ ）。
+    int srcfd, desfd;
+    srcfd = open("src.c", O_RDONLY);
+    desfd = open("des.c", O_RDWR);
+    
+    char buffer[64];
+    int num = 0;
+    
+    while ((num = read(srcfd, buffer, 64)) > 0)
+    {
+        write(desfd, buffer, 64);
+    }
+    
+    close(srcfd);
+    close(desfd);`,
     img: '',
     options: ['65kb', '小于65kb', '大于65kb', '0kb'],
     answer: 'C',
@@ -468,9 +482,9 @@ const questionList = [
   {
     id: 43,
     type: 'radio',
-    title: '用open( )创建新文件时，若该文件存在则可以返回错误信息的参数是',
+    title: `用open( )创建新文件时，若该文件存在则可以返回错误信息的参数是`,
     img: '',
-    options: ['O\\_CREAT', 'O\\_EXCL', 'O\\_TRUNC', 'O\\_NOCTTY'],
+    options: ['O_CREAT', 'O_EXCL', 'O_TRUNC', 'O_NOCTTY'],
     answer: 'B',
     tags: [],
     collect: false,
@@ -479,7 +493,7 @@ const questionList = [
   {
     id: 44,
     type: 'radio',
-    title: '对于tar.bz2 结尾的文件，采用下面哪个命令进行解压缩操作（）。',
+    title: `对于tar.bz2 结尾的文件，采用下面哪个命令进行解压缩操作（）。`,
     img: '',
     options: ['tar xzvf', 'tar jxvf', 'tar czvf', 'tar jcvf'],
     answer: 'B',
@@ -490,7 +504,7 @@ const questionList = [
   {
     id: 45,
     type: 'radio',
-    title: '在使用gcc编译器的过程中，以下（ ）选项可用来指定生成的目标文件名',
+    title: `在使用gcc编译器的过程中，以下（ ）选项可用来指定生成的目标文件名`,
     img: '',
     options: ['-c', '-o', '-S', '-E'],
     answer: 'B',
@@ -501,7 +515,7 @@ const questionList = [
   {
     id: 46,
     type: 'radio',
-    title: '一般情况下，STDIN\\_FILENO对应的文件描述符为',
+    title: `一般情况下，STDIN_FILENO对应的文件描述符为`,
     img: '',
     options: ['-1', '0', '1', '2'],
     answer: 'B',
@@ -512,7 +526,7 @@ const questionList = [
   {
     id: 47,
     type: 'radio',
-    title: '如需gcc提供编译过程中所有有用的报警信息，则在编译时应加入选项',
+    title: `如需gcc提供编译过程中所有有用的报警信息，则在编译时应加入选项`,
     img: '',
     options: ['-w', '-Wall', '-werror', '-error'],
     answer: 'B',
@@ -523,7 +537,7 @@ const questionList = [
   {
     id: 48,
     type: 'radio',
-    title: 'gcc的正确编译流程为',
+    title: `gcc的正确编译流程为`,
     img: '',
     options: ['预处理-编译-汇编-链接', '预处理-编译-链接-汇编', '预处理-链接-编译-汇编', '编译-预处理-汇编-链接'],
     answer: 'A',
@@ -534,7 +548,7 @@ const questionList = [
   {
     id: 49,
     type: 'radio',
-    title: '下列对 off\\_t lseek(int fd,off\\_t offset,int whence) 函数说明错误的是',
+    title: `下列对 off_t lseek(int fd,off_t offset,int whence) 函数说明错误的是`,
     img: '',
     options: ['offset 值可以使正数，可以使负数', 'lseek 成功时返回当前文件读写位置', 'offset 相对于whence 参数的偏移，左移动为正数，右移动为负数', '以上都对'],
     answer: 'C',
@@ -545,9 +559,9 @@ const questionList = [
   {
     id: 50,
     type: 'radio',
-    title: '对于函数 off\\_t lseek(int fd, offst\\_t offset, int whence) 中不是whence值的是',
+    title: `对于函数 off_t lseek(int fd, offst_t offset, int whence) 中不是whence值的是`,
     img: '',
-    options: ['SEEK\\_SET', 'SEEK\\_END', 'SEEK\\_START', 'SEEK\\_CUR'],
+    options: ['SEEK_SET', 'SEEK_END', 'SEEK_START', 'SEEK_CUR'],
     answer: 'C',
     tags: [],
     collect: false,
@@ -556,7 +570,7 @@ const questionList = [
   {
     id: 51,
     type: 'radio',
-    title: 'lseek( )操作成功时返回值的含义是（）。',
+    title: `lseek( )操作成功时返回值的含义是（）。`,
     img: '',
     options: ['新的文件位移量', '文件位置指针移动的字节数', '原先的文件位移量', '总是0'],
     answer: 'A',
@@ -567,9 +581,9 @@ const questionList = [
   {
     id: 52,
     type: 'radio',
-    title: '可以将in\\_addr 结构中的IP地址转换为点分十进制字符串方式的函数是',
+    title: `可以将in_addr 结构中的IP地址转换为点分十进制字符串方式的函数是`,
     img: '',
-    options: ['inet\\_addr(  )', 'inet\\_pton()', 'inet\\_ntop()', 'ntohs()'],
+    options: ['inet_addr(  )', 'inet_pton()', 'inet_ntop()', 'ntohs()'],
     answer: 'C',
     tags: [],
     collect: false,
@@ -578,7 +592,7 @@ const questionList = [
   {
     id: 53,
     type: 'radio',
-    title: '下列哪个信号不能忽略或捕获',
+    title: `下列哪个信号不能忽略或捕获`,
     img: '',
     options: ['SIGINT', 'SIGSTOP', 'SIGQUIT', '以上都不对'],
     answer: 'B',
@@ -589,7 +603,7 @@ const questionList = [
   {
     id: 54,
     type: 'radio',
-    title: '创建无名管道使用的函数是 （ ）。',
+    title: `创建无名管道使用的函数是 （ ）。`,
     img: '',
     options: ['mkfifo', 'pipe', 'msgget', 'shmget'],
     answer: 'B',
@@ -600,7 +614,10 @@ const questionList = [
   {
     id: 55,
     type: 'radio',
-    title: '如果键盘输入为abcdef，程序如下所示，打印结果应该是（ ） char buffer[6]; ............ fgets(buffer,6,stdin); printf("%s",buffer);',
+    title: `如果键盘输入为abcdef，程序如下所示，打印结果应该是（ ） 
+    char buffer[6]; 
+    fgets(buffer,6,stdin); 
+    printf("%s",buffer);`,
     img: '',
     options: ['abcde', 'abcdef', 'abcdef后出现乱码', '段错误'],
     answer: 'A',
@@ -611,7 +628,7 @@ const questionList = [
   {
     id: 56,
     type: 'radio',
-    title: '下面哪项不是Linux 操作系统下常见的进程调度命令',
+    title: `下面哪项不是Linux 操作系统下常见的进程调度命令`,
     img: '',
     options: ['bg', 'kill', 'open', 'ps'],
     answer: 'C',
@@ -622,7 +639,7 @@ const questionList = [
   {
     id: 57,
     type: 'radio',
-    title: '以下哪一个不属于Makefile的变量类型（）。',
+    title: `以下哪一个不属于Makefile的变量类型（）。`,
     img: '',
     options: ['环境变量', '自动变量', '预定义变量', '符号变量'],
     answer: 'D',
@@ -633,9 +650,9 @@ const questionList = [
   {
     id: 58,
     type: 'radio',
-    title: '对于函数 int socket(int family,int type,int protocol) 若指定套接字类型为TCP协议，则type 值为下列哪项（ ）。',
+    title: `对于函数 int socket(int family,int type,int protocol) 若指定套接字类型为TCP协议，则type 值为下列哪项（ ）。`,
     img: '',
-    options: ['SOCK\\_STREAM', 'SOCK\\_DGRAM', 'SOCK\\_RAW', 'AF\\_INET'],
+    options: ['SOCK_STREAM', 'SOCK_DGRAM', 'SOCK_RAW', 'AF_INET'],
     answer: 'A',
     tags: [],
     collect: false,
@@ -644,9 +661,9 @@ const questionList = [
   {
     id: 59,
     type: 'radio',
-    title: '用于创建一个信号量，并对其初始化的函数是（ ）。',
+    title: `用于创建一个信号量，并对其初始化的函数是（ ）。`,
     img: '',
-    options: ['sem\\_init', 'sem\\_post', 'sem\\_wait', 'sem\\_destroy'],
+    options: ['sem_init', 'sem_post', 'sem_wait', 'sem_destroy'],
     answer: 'A',
     tags: [],
     collect: false,
@@ -655,9 +672,9 @@ const questionList = [
   {
     id: 60,
     type: 'radio',
-    title: '以下哪个函数能够实现信号量加1的操作',
+    title: `以下哪个函数能够实现信号量加1的操作`,
     img: '',
-    options: ['sem\\_init()', 'sem\\_wait()', 'sem\\_post()', 'sem\\_destory'],
+    options: ['sem_init()', 'sem_wait()', 'sem_post()', 'sem_destory'],
     answer: 'C',
     tags: [],
     collect: false,
@@ -666,7 +683,7 @@ const questionList = [
   {
     id: 61,
     type: 'radio',
-    title: '下列哪种进程间通信机制是在软件层次上对中断机制的模拟',
+    title: `下列哪种进程间通信机制是在软件层次上对中断机制的模拟`,
     img: '',
     options: ['匿名管道', '消息队列', '信号', '共享内存'],
     answer: 'C',
@@ -677,9 +694,9 @@ const questionList = [
   {
     id: 62,
     type: 'radio',
-    title: '下列宏那个是指标准输入文件（）。',
+    title: `下列宏那个是指标准输入文件（）。`,
     img: '',
-    options: ['STDIN\\_FILENO', 'STDOUT\\_FILENO', 'STDERR\\_FILENO', '以上都不对'],
+    options: ['STDIN_FILENO', 'STDOUT_FILENO', 'STDERR_FILENO', '以上都不对'],
     answer: 'A',
     tags: [],
     collect: false,
@@ -688,9 +705,9 @@ const questionList = [
   {
     id: 63,
     type: 'radio',
-    title: '使用函数 int open(const char\\* pathname, int flag, ...）以读写的方式打开一个已经存在的文件，那么flag 的值为（）。',
+    title: `使用函数 int open(const char* pathname, int flag, ...）以读写的方式打开一个已经存在的文件，那么flag 的值为（）。`,
     img: '',
-    options: ['O\\_RDONLY', 'O\\_WRONLY', 'O\\_RDWR', 'O\\_CREAT'],
+    options: ['O_RDONLY', 'O_WRONLY', 'O_RDWR', 'O_CREAT'],
     answer: 'C',
     tags: [],
     collect: false,
@@ -699,7 +716,7 @@ const questionList = [
   {
     id: 64,
     type: 'radio',
-    title: '在vi 编辑器里从编辑模式切换到命令行模式需要按（）。',
+    title: `在vi 编辑器里从编辑模式切换到命令行模式需要按（）。`,
     img: '',
     options: ['F2键', 'Shift键', 'Tab键', 'Esc键'],
     answer: 'D',
@@ -710,7 +727,7 @@ const questionList = [
   {
     id: 65,
     type: 'radio',
-    title: '下面哪种语言gcc编译器不支持',
+    title: `下面哪种语言gcc编译器不支持`,
     img: '',
     options: ['c', 'Java', 'ASP', 'c++'],
     answer: 'C',
@@ -721,9 +738,9 @@ const questionList = [
   {
     id: 66,
     type: 'radio',
-    title: '在Makefile 文件中，使用变量的值的方法是（ ）。',
+    title: `在Makefile 文件中，使用变量的值的方法是（ ）。`,
     img: '',
-    options: ['\\$变量名', '\\$(变量名)', '#变量名', '#（变量名）'],
+    options: ['$变量名', '$(变量名)', '#变量名', '#（变量名）'],
     answer: 'B',
     tags: [],
     collect: false,
@@ -732,7 +749,7 @@ const questionList = [
   {
     id: 67,
     type: 'radio',
-    title: 'gcc 可以对编译阶段进行控制，其中（ ）选项设定库文件的路径',
+    title: `gcc 可以对编译阶段进行控制，其中（ ）选项设定库文件的路径`,
     img: '',
     options: ['-Lpath', '-lpath', '-llibrary', '-static'],
     answer: 'A',
@@ -743,7 +760,7 @@ const questionList = [
   {
     id: 68,
     type: 'radio',
-    title: '一般情况下，STDERR\\_FILENO对应的文件描述符为',
+    title: `一般情况下，STDERR_FILENO对应的文件描述符为`,
     img: '',
     options: ['-1', '0', '1', '2'],
     answer: 'D',
@@ -754,7 +771,7 @@ const questionList = [
   {
     id: 69,
     type: 'radio',
-    title: '下列哪种打开文件的方式不能修改文件已有的内容',
+    title: `下列哪种打开文件的方式不能修改文件已有的内容`,
     img: '',
     options: ['r+', 'w', 'w+', 'a+'],
     answer: 'D',
@@ -765,7 +782,7 @@ const questionList = [
   {
     id: 70,
     type: 'radio',
-    title: '( )函数可将内存中的数据写入文件。',
+    title: `( )函数可将内存中的数据写入文件。`,
     img: '',
     options: ['open', 'read', 'write', 'creat'],
     answer: 'C',
@@ -776,7 +793,7 @@ const questionList = [
   {
     id: 71,
     type: 'radio',
-    title: 'gcc 是针对linux操作系统环境下应用程序的编译工具，下面叙述中错误的是（）。',
+    title: `gcc 是针对linux操作系统环境下应用程序的编译工具，下面叙述中错误的是（）。`,
     img: '',
     options: ['gcc 能将c语言、c++语言、汇编语言编写的源程序生成执行文件', '设计者若要对源程序进行调试，需要在gcc命令中加入-g 参数来编译该源程序', 'gcc将源文件生成可执行文件的过程是有编译、汇编、链接等3个阶段组成', '用gcc 把源文件仅编译成目标文件，那么，c语言编写的应用程序中可以不要main函数'],
     answer: 'C',
@@ -787,7 +804,7 @@ const questionList = [
   {
     id: 72,
     type: 'radio',
-    title: '默认情况下管理员创建了一个用户，就会在（ ）目录下创建一个用户主目录。',
+    title: `默认情况下管理员创建了一个用户，就会在（ ）目录下创建一个用户主目录。`,
     img: '',
     options: ['/usr', '/home', '/root', '/etc'],
     answer: 'B',
@@ -798,9 +815,24 @@ const questionList = [
   {
     id: 73,
     type: 'radio',
-    title: '假设当前目录下有文件Makefile，下面是其内容： main:main.o sub\\_add.o gcc -o main main.o sub\\_add.o main.o:main.c gcc -c main.c -I ./include/ sub\\_add.o:sub\\_add.c gcc -c sub\\_add.c .PHONY:clean clean: rm -f \\*.o main 现在执行make sub\\_add.o，实际执行的命令是（）。',
+    title: `假设当前目录下有文件Makefile，下面是其内容：
+    main:
+      main.o sub_add.o 
+      gcc -o main main.o sub_add.o 
+    
+    main.o:main.c 
+      gcc -c main.c -I ./include/ 
+    
+    sub_add.o:sub_add.c 
+      gcc -c sub_add.c 
+    
+    .PHONY:clean 
+    clean: 
+      rm -f *.o main 
+    
+    现在执行make sub_add.o，实际执行的命令是（）。`,
     img: '',
-    options: ['gcc  -o main main.o sub\\_add.o', 'gcc -c sub\\_add.c', 'gcc -c main.c -I ./include/', 'rm  -f  \\*.o main'],
+    options: ['gcc  -o main main.o sub_add.o', 'gcc -c sub_add.c', 'gcc -c main.c -I ./include/', 'rm  -f  *.o main'],
     answer: 'B',
     tags: [],
     collect: false,
@@ -809,7 +841,7 @@ const questionList = [
   {
     id: 74,
     type: 'radio',
-    title: '对于tar.gz 结尾的文件，采用下面哪个命令进行解压缩操作（）。',
+    title: `对于tar.gz 结尾的文件，采用下面哪个命令进行解压缩操作（）。`,
     img: '',
     options: ['tar xzvf', 'tar xjvf', 'tar czvf', 'tar jcvf'],
     answer: 'A',
@@ -820,7 +852,7 @@ const questionList = [
   {
     id: 75,
     type: 'radio',
-    title: '在使用mkdir 命令创建新的目录时，在其父目录不存在时先创建父目录的选项是',
+    title: `在使用mkdir 命令创建新的目录时，在其父目录不存在时先创建父目录的选项是`,
     img: '',
     options: ['-m', '-d', '-f', '-p'],
     answer: 'D',
@@ -831,7 +863,7 @@ const questionList = [
   {
     id: 76,
     type: 'radio',
-    title: '下列对于有名管道描述错误的是（ ）。',
+    title: `下列对于有名管道描述错误的是（ ）。`,
     img: '',
     options: ['可以用于互不相关的进程间', '管道内容保存在磁盘中', '在文件系统中可见', '通过路径名赖打开有名管道'],
     answer: 'B',
@@ -842,9 +874,9 @@ const questionList = [
   {
     id: 77,
     type: 'radio',
-    title: '下面哪项对Linux操作系统下exit() 和 \\_exit()函数的描述是错误的是',
+    title: `下面哪项对Linux操作系统下exit() 和 _exit()函数的描述是错误的是`,
     img: '',
-    options: ['\\_exit()函数的作用是直接使进程停止运行，清除其使用的内存空间，并清除其在内核中的各种数据结构', 'exit()函数在调用exit退出系统之前要检查文件的打开情况', 'exit()函数直接将进程关闭，此时缓冲区中的数据将会丢失', '想保证数据的完整性，就一定要使用exit()函数'],
+    options: ['_exit()函数的作用是直接使进程停止运行，清除其使用的内存空间，并清除其在内核中的各种数据结构', 'exit()函数在调用exit退出系统之前要检查文件的打开情况', 'exit()函数直接将进程关闭，此时缓冲区中的数据将会丢失', '想保证数据的完整性，就一定要使用exit()函数'],
     answer: 'C',
     tags: [],
     collect: false,
@@ -853,7 +885,7 @@ const questionList = [
   {
     id: 78,
     type: 'radio',
-    title: '以读写方式打开一个已存在的标准I/O流时应指定哪个mode参数',
+    title: `以读写方式打开一个已存在的标准I/O流时应指定哪个mode参数`,
     img: '',
     options: ['r', 'r+', 'w+', 'a+'],
     answer: 'B',
@@ -864,7 +896,7 @@ const questionList = [
   {
     id: 79,
     type: 'radio',
-    title: '当用户程序运行时会自动打开（）个标准流。',
+    title: `当用户程序运行时会自动打开（）个标准流。`,
     img: '',
     options: ['0', '1', '2', '3'],
     answer: 'D',
@@ -875,7 +907,7 @@ const questionList = [
   {
     id: 80,
     type: 'radio',
-    title: '删除文件命令为（ ）。',
+    title: `删除文件命令为（ ）。`,
     img: '',
     options: ['mkdir', 'move', 'mv', 'rm'],
     answer: 'D',
@@ -886,7 +918,7 @@ const questionList = [
   {
     id: 81,
     type: 'radio',
-    title: '以下哪一项不属于Makefile的目标类型（）。',
+    title: `以下哪一项不属于Makefile的目标类型（）。`,
     img: '',
     options: ['依赖文件', '伪目标（标签）', '中间目标', '最终目标'],
     answer: 'A',
@@ -897,7 +929,7 @@ const questionList = [
   {
     id: 82,
     type: 'radio',
-    title: '在 vi 编辑器里从命令模式切换到末行（尾行）模式需要按（）。',
+    title: `在 vi 编辑器里从命令模式切换到末行（尾行）模式需要按（）。`,
     img: '',
     options: ['Tab键', ':键', 'Esc键', 'F2键'],
     answer: 'B',
@@ -908,7 +940,7 @@ const questionList = [
   {
     id: 83,
     type: 'radio',
-    title: '关于信号下列说法错误的是',
+    title: `关于信号下列说法错误的是`,
     img: '',
     options: ['发送信号的函数主要有kill、 raise 和 alarm', 'raise 既可以向自身发送信号，也可以向其他进程发送信号', 'alarm 也称为闹钟函数，一个进程只能有一个闹钟时间。', '当系统捕捉到某个信号时，可以忽略信号或是使用指定的处理函数赖处理。'],
     answer: 'B',
@@ -919,9 +951,9 @@ const questionList = [
   {
     id: 84,
     type: 'radio',
-    title: '以下哪一个不是fseek(FILE \\*stream,long offset,int whence) 中whence的合法值',
+    title: `以下哪一个不是fseek(FILE *stream,long offset,int whence) 中whence的合法值`,
     img: '',
-    options: ['SEEK\\_SET', 'SEEK\\_GET', 'SEEK\\_CUR', 'SEEK\\_END'],
+    options: ['SEEK_SET', 'SEEK_GET', 'SEEK_CUR', 'SEEK_END'],
     answer: 'B',
     tags: [],
     collect: false,
@@ -930,7 +962,7 @@ const questionList = [
   {
     id: 85,
     type: 'radio',
-    title: '在gcc的常用选项中，（）表示编译为汇编代码。',
+    title: `在gcc的常用选项中，（）表示编译为汇编代码。`,
     img: '',
     options: ['-c', '-S', '-E', '-g'],
     answer: 'B',
@@ -941,7 +973,7 @@ const questionList = [
   {
     id: 86,
     type: 'radio',
-    title: '下面哪项对进程控制块的描述是错误的',
+    title: `下面哪项对进程控制块的描述是错误的`,
     img: '',
     options: ['进程控制块包含进程的描述信息', '进程控制块包含进程的控制信息', '进程控制块包含进程额资源信息', '进程控制块是进程的一个静态描述'],
     answer: 'D',
@@ -952,7 +984,7 @@ const questionList = [
   {
     id: 87,
     type: 'radio',
-    title: '用gcc编译一个名为“helloworld.c”的c程序文件，编译后执行文件为“hello”，则相应的编译命令是以下哪一项',
+    title: `用gcc编译一个名为“helloworld.c”的c程序文件，编译后执行文件为“hello”，则相应的编译命令是以下哪一项`,
     img: '',
     options: ['gcc -i helloworld.c -o hello', 'gcc -o hello helloworld.c', 'gcc -c hello helloworld.c', 'gcc -o helloworld.c hello'],
     answer: 'B',
@@ -963,7 +995,7 @@ const questionList = [
   {
     id: 88,
     type: 'radio',
-    title: '某文件的组外成员的权限为只读；所有者有全部权限；组内的权限为读与写，则该文件的权限为',
+    title: `某文件的组外成员的权限为只读；所有者有全部权限；组内的权限为读与写，则该文件的权限为`,
     img: '',
     options: ['467', '674', '476', '764'],
     answer: 'D',
@@ -974,7 +1006,7 @@ const questionList = [
   {
     id: 89,
     type: 'radio',
-    title: '移动或重命名文件命令为（）。',
+    title: `移动或重命名文件命令为（）。`,
     img: '',
     options: ['mkdir', 'rmdir', 'mv', 'rm'],
     answer: 'C',
@@ -985,7 +1017,7 @@ const questionList = [
   {
     id: 90,
     type: 'radio',
-    title: '哪个命令可以将普通用户转换成超级用户',
+    title: `哪个命令可以将普通用户转换成超级用户`,
     img: '',
     options: ['super', 'passwd', 'tar', 'su'],
     answer: 'D',
@@ -996,7 +1028,7 @@ const questionList = [
   {
     id: 91,
     type: 'radio',
-    title: '下列哪个函数不会改变文件位置指针',
+    title: `下列哪个函数不会改变文件位置指针`,
     img: '',
     options: ['fread', 'fwrite', 'rewind', 'ftell'],
     answer: 'D',
@@ -1007,7 +1039,7 @@ const questionList = [
   {
     id: 92,
     type: 'radio',
-    title: '对文件进行归档的命令为',
+    title: `对文件进行归档的命令为`,
     img: '',
     options: ['gzip', 'tar', 'dump', 'dd'],
     answer: 'B',
@@ -1018,7 +1050,7 @@ const questionList = [
   {
     id: 93,
     type: 'radio',
-    title: '下面哪项对Linux操作系统下fork函数的描述是错误的',
+    title: `下面哪项对Linux操作系统下fork函数的描述是错误的`,
     img: '',
     options: ['fork函数执行一次返回两个值', '新进程称为子进程，而原进程称为父进程', '父进程返回值为子进程的进程号', '子进程返回值为父进程的进程号'],
     answer: 'D',
@@ -1029,7 +1061,7 @@ const questionList = [
   {
     id: 94,
     type: 'radio',
-    title: '进程的三种状态为',
+    title: `进程的三种状态为`,
     img: '',
     options: ['准备态、执行态和退出态', '精确态、模糊态和随机态', '运行态、就绪态和等待态', '手工态、自动态和自由'],
     answer: 'C',
@@ -1040,7 +1072,7 @@ const questionList = [
   {
     id: 95,
     type: 'radio',
-    title: '在使用gcc编译器的过程中，如果只想生成目标文件而不进行连接，需要使用选项',
+    title: `在使用gcc编译器的过程中，如果只想生成目标文件而不进行连接，需要使用选项`,
     img: '',
     options: ['-S', '-o', '-c', '-E'],
     answer: 'C',
@@ -1051,7 +1083,7 @@ const questionList = [
   {
     id: 96,
     type: 'radio',
-    title: '使用命令对file目录进行压缩打包，要求打包文件为file.tar.gz,以下哪个选项是正确的（）。',
+    title: `使用命令对file目录进行压缩打包，要求打包文件为file.tar.gz,以下哪个选项是正确的（）。`,
     img: '',
     options: ['tar -czvf  file.tar.gz  file', 'tar -xzvf  file.tar.gz  file', 'tar  -czvf    file', 'tar  -czvf   file.tar.gz'],
     answer: 'A',
@@ -1062,7 +1094,7 @@ const questionList = [
   {
     id: 97,
     type: 'radio',
-    title: '函数 ssize\\_t read(int fd, void \\*buffer, size\\_t count) 返回值表示的正确是',
+    title: `函数 ssize_t read(int fd, void *buffer, size_t count) 返回值表示的正确是`,
     img: '',
     options: ['buffer 的大小', '实际读取文件字节数', '0', '以上都不对'],
     answer: 'B',
@@ -1073,7 +1105,7 @@ const questionList = [
   {
     id: 98,
     type: 'radio',
-    title: '当流缓冲涉及一个终端时，标准I/O典型地使用下面哪项缓冲方式',
+    title: `当流缓冲涉及一个终端时，标准I/O典型地使用下面哪项缓冲方式`,
     img: '',
     options: ['全缓冲', '行缓冲', '无缓冲', '帧缓冲'],
     answer: 'B',
@@ -1084,7 +1116,7 @@ const questionList = [
   {
     id: 99,
     type: 'radio',
-    title: '下面哪项关于gcc编译过程的说法是错误的',
+    title: `下面哪项关于gcc编译过程的说法是错误的`,
     img: '',
     options: ['编译阶段gcc要检查代码规范性、是否有语法错误等，确定代码的实际要做的工作', '汇编阶段是把编译阶段生成的.s文件转成目标文件', '预处理阶段，gcc编译器将代码中包含的头文件编译进来', 'gcc在编译时默认使用静态库'],
     answer: 'D',
@@ -1095,7 +1127,7 @@ const questionList = [
   {
     id: 100,
     type: 'checkbox',
-    title: '关于listen() 函数，下列描述正确的是',
+    title: `关于listen() 函数，下列描述正确的是`,
     img: '',
     options: ['有两个 参数', '第1个参数为套接字', '第2个参数是等待连接队列中的最大等待数', '用于服务器侦听网络上有无连接请求'],
     answer: 'A,B,C,D',
@@ -1106,9 +1138,9 @@ const questionList = [
   {
     id: 101,
     type: 'checkbox',
-    title: '下列makefile 文件中常见的自动变量描述正确的是',
+    title: `下列makefile 文件中常见的自动变量描述正确的是`,
     img: '',
-    options: ['\\$@ 表示目标文件的完整名称', '\\$<‌ 表示第一个依赖文件的名称', '\\$^ 表示重复的依赖文件，以空格分开', '\\$\\* 表示不包含扩展名的目标文件名称'],
+    options: ['$@ 表示目标文件的完整名称', '$<‌ 表示第一个依赖文件的名称', '$^ 表示重复的依赖文件，以空格分开', '$* 表示不包含扩展名的目标文件名称'],
     answer: 'A,B,D',
     tags: [],
     collect: false,
@@ -1117,7 +1149,7 @@ const questionList = [
   {
     id: 102,
     type: 'checkbox',
-    title: '关于connect（）函数，下列哪些说法是正确的（ ）。',
+    title: `关于connect（）函数，下列哪些说法是正确的（ ）。`,
     img: '',
     options: ['一共3个参数', '第1个参数是套接字', '第2个参数是服务端的地址信息', '第3个参数是服务器地址长度'],
     answer: 'A,B,C,D',
@@ -1128,9 +1160,9 @@ const questionList = [
   {
     id: 103,
     type: 'checkbox',
-    title: '只终止某个线程可以有哪些方法',
+    title: `只终止某个线程可以有哪些方法`,
     img: '',
-    options: ['从线程函数return。这种方法对主线程不适用，从main函数return相当于调用exit。', '一个线程可以调用pthread\\_cancel终止同一进程中的另一个线程。', '线程可以调用pthread\\_exit终止自己。', '以上都不对'],
+    options: ['从线程函数return。这种方法对主线程不适用，从main函数return相当于调用exit。', '一个线程可以调用pthread_cancel终止同一进程中的另一个线程。', '线程可以调用pthread_exit终止自己。', '以上都不对'],
     answer: 'A,B,C',
     tags: [],
     collect: false,
@@ -1139,7 +1171,7 @@ const questionList = [
   {
     id: 104,
     type: 'checkbox',
-    title: '采用gcc编译代码时，命令gcc foo.c -o foo1采用动态链接的方式生成可可执行文件fool;命令gcc foo.c -static -o foo2采用静态链接的方式生成可执行文件foo2。通常而言，在相同环境下（ ）。',
+    title: `采用gcc编译代码时，命令gcc foo.c -o foo1采用动态链接的方式生成可可执行文件fool;命令gcc foo.c -static -o foo2采用静态链接的方式生成可执行文件foo2。通常而言，在相同环境下（ ）。`,
     img: '',
     options: ['foo2运行速度更快', 'foo1可执行文件更小', 'foo2占用的外存空间更小', 'foo2运行时占用的内存空间更小'],
     answer: 'A,B',
@@ -1150,9 +1182,9 @@ const questionList = [
   {
     id: 105,
     type: 'checkbox',
-    title: '动态库制作完成后，运行可执行文件：./pow\\_test 2 10 出现下面错误提示：pow\\_test: error while loading shared libraries:libtmath.so: cannot open shared object file: No such file or directory ，遇到这种问题如何解决（）。',
+    title: `动态库制作完成后，运行可执行文件：./pow_test 2 10 出现下面错误提示：pow_test: error while loading shared libraries:libtmath.so: cannot open shared object file: No such file or directory ，遇到这种问题如何解决（）。`,
     img: '',
-    options: ['告诉加载器，动态库文件的路径，通过修改/etc/ld.so.conf文件', '告诉加载器，动态库文件的路径，通过修改LD\\_LIBRARY\\_PATH环境变量', '将库文件直接拷贝到/lib或者/usr/lib目录下', '以上都不对'],
+    options: ['告诉加载器，动态库文件的路径，通过修改/etc/ld.so.conf文件', '告诉加载器，动态库文件的路径，通过修改LD_LIBRARY_PATH环境变量', '将库文件直接拷贝到/lib或者/usr/lib目录下', '以上都不对'],
     answer: 'A,B,C',
     tags: [],
     collect: false,
@@ -1161,7 +1193,7 @@ const questionList = [
   {
     id: 106,
     type: 'checkbox',
-    title: '欲把当前目录下的file1.txt 复制为 file2.txt ,正确的命令是（）。',
+    title: `欲把当前目录下的file1.txt 复制为 file2.txt ,正确的命令是（）。`,
     img: '',
     options: ['cp file1.txt file2.txt', 'cp file1.txt | file2.txt', 'cat file2.txt file1.txt', 'cat file1.txt >‌ file2.txt'],
     answer: 'A,D',
@@ -1172,7 +1204,7 @@ const questionList = [
   {
     id: 107,
     type: 'checkbox',
-    title: '下列函数哪些可以发送信号',
+    title: `下列函数哪些可以发送信号`,
     img: '',
     options: ['kill', 'alarm', 'signal', '以上都不对'],
     answer: 'A,B',
@@ -1183,7 +1215,7 @@ const questionList = [
   {
     id: 108,
     type: 'checkbox',
-    title: '信号的响应有哪几种方式',
+    title: `信号的响应有哪几种方式`,
     img: '',
     options: ['缺省执行', '忽略信号', '捕获信号', '以上都不对'],
     answer: 'A,B,C',
@@ -1194,7 +1226,7 @@ const questionList = [
   {
     id: 109,
     type: 'checkbox',
-    title: 'makefile 中的变量分为',
+    title: `makefile 中的变量分为`,
     img: '',
     options: ['用户自定义变量', '预定义变量', '自动变量', '环境变量'],
     answer: 'A,B,C,D',
@@ -1205,9 +1237,9 @@ const questionList = [
   {
     id: 110,
     type: 'checkbox',
-    title: '下面对Makefile 自动变量描述正确的是（）。',
+    title: `下面对Makefile 自动变量描述正确的是（）。`,
     img: '',
-    options: ['\\$<‌ 表示第一个依赖文件', '\\$@ 表示目标体完整名称', '\\$^ 表示所有不重复的依赖文件', '以上说法都不对'],
+    options: ['$<‌ 表示第一个依赖文件', '$@ 表示目标体完整名称', '$^ 表示所有不重复的依赖文件', '以上说法都不对'],
     answer: 'A,B,C',
     tags: [],
     collect: false,
@@ -1216,7 +1248,7 @@ const questionList = [
   {
     id: 111,
     type: 'fill',
-    title: '上面图表示信号量的（ ）操作（填互斥或同步）,线程一和线程二的执行顺序为：先（ ）执行，在（ ）执行',
+    title: `上面图表示信号量的（ ）操作（填互斥或同步）,线程一和线程二的执行顺序为：先（ ）执行，在（ ）执行`,
     img: 'images/e667588a964b5d647f1adc3dd57d55160f2613ea7941b1ad8c6e1a97ee72253a.png',
     options: [],
     answer: '同步、线程一、线程二',
@@ -1227,7 +1259,7 @@ const questionList = [
   {
     id: 112,
     type: 'fill',
-    title: '对于整形信号量，在执行一次P操作，信号量的值应（ ）1，在执行一次V操作，信号量的值应（ ）1 。（填加 或减）',
+    title: `对于整形信号量，在执行一次P操作，信号量的值应（ ）1，在执行一次V操作，信号量的值应（ ）1 。（填加 或减）`,
     img: '',
     options: [],
     answer: '减、加',
@@ -1238,7 +1270,7 @@ const questionList = [
   {
     id: 113,
     type: 'fill',
-    title: '对数据要求高可靠性的应用需选择（ ）协议；对实时性要求较高的应用需选择（ ）协议。（ 填TCP或UDP ）',
+    title: `对数据要求高可靠性的应用需选择（ ）协议；对实时性要求较高的应用需选择（ ）协议。（ 填TCP或UDP ）`,
     img: '',
     options: [],
     answer: 'TCP、UDP',
@@ -1249,10 +1281,10 @@ const questionList = [
   {
     id: 114,
     type: 'fill',
-    title: 'POSIX信号量执行P操作的函数为（ ），执行V操作的函数为（ ）。',
+    title: `POSIX信号量执行P操作的函数为（ ），执行V操作的函数为（ ）。`,
     img: '',
     options: [],
-    answer: 'sem\\_wait、sem\\_post',
+    answer: 'sem_wait、sem_post',
     tags: [],
     collect: false,
     note: ''
@@ -1260,7 +1292,7 @@ const questionList = [
   {
     id: 115,
     type: 'fill',
-    title: 'Shell 的（ ）命令可以查看共享内存的情况',
+    title: `Shell 的（ ）命令可以查看共享内存的情况`,
     img: '',
     options: [],
     answer: 'ipcs -m',
@@ -1271,7 +1303,7 @@ const questionList = [
   {
     id: 116,
     type: 'fill',
-    title: '常用的进程间通信种类包括无名管道、（ ）、信号、（ ）、共享内存、信号量、socket',
+    title: `常用的进程间通信种类包括无名管道、（ ）、信号、（ ）、共享内存、信号量、socket`,
     img: '',
     options: [],
     answer: '有名管道、消息队列',
@@ -1282,7 +1314,7 @@ const questionList = [
   {
     id: 117,
     type: 'fill',
-    title: '调用（ ）函数可以打开或创建一个文件。（这里指系统调用）',
+    title: `调用（ ）函数可以打开或创建一个文件。（这里指系统调用）`,
     img: '',
     options: [],
     answer: 'open',
@@ -1293,10 +1325,10 @@ const questionList = [
   {
     id: 118,
     type: 'fill',
-    title: '使用通配符（） 每次可以匹配一个字符；使用通配符（）每次可以匹配任意字符。',
+    title: `使用通配符（） 每次可以匹配一个字符；使用通配符（）每次可以匹配任意字符。`,
     img: '',
     options: [],
-    answer: '？、\\*',
+    answer: '？、*',
     tags: [],
     collect: false,
     note: ''
@@ -1304,7 +1336,7 @@ const questionList = [
   {
     id: 119,
     type: 'fill',
-    title: '创建子进程的函数是（ ）。',
+    title: `创建子进程的函数是（ ）。`,
     img: '',
     options: [],
     answer: 'fork',
@@ -1315,7 +1347,7 @@ const questionList = [
   {
     id: 120,
     type: 'fill',
-    title: '查看当前Linux 系统有哪些信号的命令是',
+    title: `查看当前Linux 系统有哪些信号的命令是`,
     img: '',
     options: [],
     answer: 'kill -l',
@@ -1326,7 +1358,7 @@ const questionList = [
   {
     id: 121,
     type: 'fill',
-    title: '通常，一个进程启动时，都会默认打开3个文件，标准输入、（ ）和标准出错处理 分别对应的文件描述符是（）、1和2。',
+    title: `通常，一个进程启动时，都会默认打开3个文件，标准输入、（ ）和标准出错处理 分别对应的文件描述符是（）、1和2。`,
     img: '',
     options: [],
     answer: '标准输出、0',
@@ -1337,7 +1369,7 @@ const questionList = [
   {
     id: 122,
     type: 'fill',
-    title: '( ) 在形式上是一个整数，用来描述被打开文件的索引值或句炳，指向该文件的相关信息记录表',
+    title: `( ) 在形式上是一个整数，用来描述被打开文件的索引值或句炳，指向该文件的相关信息记录表`,
     img: '',
     options: [],
     answer: '文件描述符',
@@ -1348,7 +1380,7 @@ const questionList = [
   {
     id: 123,
     type: 'fill',
-    title: 'gcc 的 编译分为四个步骤：（ ） 、编译、（ ）和 链接。',
+    title: `gcc 的 编译分为四个步骤：（ ） 、编译、（ ）和 链接。`,
     img: '',
     options: [],
     answer: '预处理、汇编',
@@ -1359,7 +1391,7 @@ const questionList = [
   {
     id: 124,
     type: 'fill',
-    title: '如果要使用gdb 对可执行文件进行调试，在gcc 编译源代码生成可执行文件 过程中，需要加选项为（）才能对可执行文件调试。',
+    title: `如果要使用gdb 对可执行文件进行调试，在gcc 编译源代码生成可执行文件 过程中，需要加选项为（）才能对可执行文件调试。`,
     img: '',
     options: [],
     answer: '-g',
@@ -1370,7 +1402,7 @@ const questionList = [
   {
     id: 125,
     type: 'fill',
-    title: '工程管理器make定义了普通规则、隐含规则和（ ）规则。',
+    title: `工程管理器make定义了普通规则、隐含规则和（ ）规则。`,
     img: '',
     options: [],
     answer: '模式',
@@ -1381,7 +1413,7 @@ const questionList = [
   {
     id: 126,
     type: 'judge',
-    title: '对于recv （ ）函数 如果没有可接收的数据时则阻塞',
+    title: `对于recv （ ）函数 如果没有可接收的数据时则阻塞`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1392,7 +1424,7 @@ const questionList = [
   {
     id: 127,
     type: 'judge',
-    title: 'gethostbyname( ) 函数只能根据给定的本机的主机名称查询本机的IP地址，不能通过DNS域名查询因特网上的其他主机的IP地址。',
+    title: `gethostbyname( ) 函数只能根据给定的本机的主机名称查询本机的IP地址，不能通过DNS域名查询因特网上的其他主机的IP地址。`,
     img: '',
     options: ['对', '错'],
     answer: 'B',
@@ -1403,7 +1435,7 @@ const questionList = [
   {
     id: 128,
     type: 'judge',
-    title: '若信号量S为正，S的值可以代表可以资源的数量（ ）。',
+    title: `若信号量S为正，S的值可以代表可以资源的数量（ ）。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1414,7 +1446,7 @@ const questionList = [
   {
     id: 129,
     type: 'judge',
-    title: '信号量既可以实现同步也可以实现互斥（ ）。',
+    title: `信号量既可以实现同步也可以实现互斥（ ）。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1425,7 +1457,7 @@ const questionList = [
   {
     id: 130,
     type: 'judge',
-    title: '结束线程使用pthread\\_exit函数，而不要使用exit函数。',
+    title: `结束线程使用pthread_exit函数，而不要使用exit函数。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1436,7 +1468,7 @@ const questionList = [
   {
     id: 131,
     type: 'judge',
-    title: 'INADDR\\_ANY表示可以接受本机所有网卡所有ip地址的数据',
+    title: `INADDR_ANY表示可以接受本机所有网卡所有ip地址的数据`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1447,7 +1479,7 @@ const questionList = [
   {
     id: 132,
     type: 'judge',
-    title: '下面的图为TCP 协议服务器端流程图',
+    title: `下面的图为TCP 协议服务器端流程图`,
     img: 'images/3261411d8b2dc9d58ee0fbee75456164f0606c434dacc1a96052a239b4b796ff.png',
     options: ['对', '错'],
     answer: 'A',
@@ -1458,7 +1490,7 @@ const questionList = [
   {
     id: 133,
     type: 'judge',
-    title: '网络字节顺序采用的是大端存储方式。',
+    title: `网络字节顺序采用的是大端存储方式。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1469,7 +1501,7 @@ const questionList = [
   {
     id: 134,
     type: 'judge',
-    title: 'socket 是一种特殊的I/O接口，它也是一种文件描述符。',
+    title: `socket 是一种特殊的I/O接口，它也是一种文件描述符。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1480,7 +1512,7 @@ const questionList = [
   {
     id: 135,
     type: 'judge',
-    title: '在进程中定义了一个全局变量，那么对其所有的线程都是可见的。',
+    title: `在进程中定义了一个全局变量，那么对其所有的线程都是可见的。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1491,7 +1523,7 @@ const questionList = [
   {
     id: 136,
     type: 'judge',
-    title: '二值型信号灯的取值为0或1',
+    title: `二值型信号灯的取值为0或1`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1502,7 +1534,7 @@ const questionList = [
   {
     id: 137,
     type: 'judge',
-    title: 'shmdt 函数 功能是解除和共享内存段绑定',
+    title: `shmdt 函数 功能是解除和共享内存段绑定`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1513,7 +1545,7 @@ const questionList = [
   {
     id: 138,
     type: 'judge',
-    title: 'exec函数族提供了一个在进程中启动另一个程序执行的方法。',
+    title: `exec函数族提供了一个在进程中启动另一个程序执行的方法。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1524,7 +1556,7 @@ const questionList = [
   {
     id: 139,
     type: 'judge',
-    title: '文件描述符是系统随机分配的非负整数',
+    title: `文件描述符是系统随机分配的非负整数`,
     img: '',
     options: ['对', '错'],
     answer: 'B',
@@ -1535,7 +1567,7 @@ const questionList = [
   {
     id: 140,
     type: 'judge',
-    title: '下面图为TCP协议客户端流程图',
+    title: `下面图为TCP协议客户端流程图`,
     img: 'images/8281d126a14a0916fdac5a7bf30c4523726c47bb26bca589c865c95a0c6b8020.png',
     options: ['对', '错'],
     answer: 'A',
@@ -1546,7 +1578,7 @@ const questionList = [
   {
     id: 141,
     type: 'judge',
-    title: '临界资源是一次仅允许一个进程（或线程）使用的共享资源。',
+    title: `临界资源是一次仅允许一个进程（或线程）使用的共享资源。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1557,7 +1589,7 @@ const questionList = [
   {
     id: 142,
     type: 'judge',
-    title: 'pthread\\_join 函数 返回值成功返回对于0的数，失败返回-1。',
+    title: `pthread_join 函数 返回值成功返回对于0的数，失败返回-1。`,
     img: '',
     options: ['对', '错'],
     answer: 'B',
@@ -1568,7 +1600,7 @@ const questionList = [
   {
     id: 143,
     type: 'judge',
-    title: 'pipe( int pfd[2]) 创建管道，其中参数pfd[0] 用于写管道，pfd[1]用于读管道。',
+    title: `pipe( int pfd[2]) 创建管道，其中参数pfd[0] 用于写管道，pfd[1]用于读管道。`,
     img: '',
     options: ['对', '错'],
     answer: 'B',
@@ -1579,7 +1611,7 @@ const questionList = [
   {
     id: 144,
     type: 'judge',
-    title: '系统命令相对API更高一层，它的内部引用用户编程接口（API）来实现相应的功能。',
+    title: `系统命令相对API更高一层，它的内部引用用户编程接口（API）来实现相应的功能。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1590,7 +1622,7 @@ const questionList = [
   {
     id: 145,
     type: 'judge',
-    title: '工程管理器make读入的配置文件为Makefile 或makefile',
+    title: `工程管理器make读入的配置文件为Makefile 或makefile`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1601,7 +1633,7 @@ const questionList = [
   {
     id: 146,
     type: 'judge',
-    title: '一个makefile 文件中可定义多个目标，利用make target 命令可指定要编译的目标，如果不指定目标，则使用最后一个目标。',
+    title: `一个makefile 文件中可定义多个目标，利用make target 命令可指定要编译的目标，如果不指定目标，则使用最后一个目标。`,
     img: '',
     options: ['对', '错'],
     answer: 'B',
@@ -1612,7 +1644,7 @@ const questionList = [
   {
     id: 147,
     type: 'judge',
-    title: 'SIGSTOP 和 SIGKILL 信号可以忽略',
+    title: `SIGSTOP 和 SIGKILL 信号可以忽略`,
     img: '',
     options: ['对', '错'],
     answer: 'B',
@@ -1623,7 +1655,7 @@ const questionList = [
   {
     id: 148,
     type: 'judge',
-    title: 'wait函数时waitpid函数的一个特例，在Linux操作系统内部实现wait函数时直接调用的就是waitpid函数。',
+    title: `wait函数时waitpid函数的一个特例，在Linux操作系统内部实现wait函数时直接调用的就是waitpid函数。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1634,7 +1666,7 @@ const questionList = [
   {
     id: 149,
     type: 'judge',
-    title: '当程序执行到exit或\\_exit时，进程会无条件地停止剩下的所有操作，清除包括PCB在内的各种数据结构，并终止本进程的运行。',
+    title: `当程序执行到exit或_exit时，进程会无条件地停止剩下的所有操作，清除包括PCB在内的各种数据结构，并终止本进程的运行。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1645,7 +1677,7 @@ const questionList = [
   {
     id: 150,
     type: 'judge',
-    title: '进程是系统的基本调度单位。',
+    title: `进程是系统的基本调度单位。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1656,7 +1688,7 @@ const questionList = [
   {
     id: 151,
     type: 'judge',
-    title: '系统调用规定用户进程进入内核空间的具体位置',
+    title: `系统调用规定用户进程进入内核空间的具体位置`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1667,7 +1699,7 @@ const questionList = [
   {
     id: 152,
     type: 'judge',
-    title: 'open（） 可以用于创建普通文件和设备文件',
+    title: `open（） 可以用于创建普通文件和设备文件`,
     img: '',
     options: ['对', '错'],
     answer: 'B',
@@ -1678,7 +1710,7 @@ const questionList = [
   {
     id: 153,
     type: 'judge',
-    title: 'fork函数使用多少次就创建多少个进程。',
+    title: `fork函数使用多少次就创建多少个进程。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1689,7 +1721,7 @@ const questionList = [
   {
     id: 154,
     type: 'judge',
-    title: 'gdb对可执行文件进行调试',
+    title: `gdb对可执行文件进行调试`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1700,7 +1732,7 @@ const questionList = [
   {
     id: 155,
     type: 'judge',
-    title: 'int close(int fd) 函数 成功返回0，出错时返回 -1',
+    title: `int close(int fd) 函数 成功返回0，出错时返回 -1`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1711,7 +1743,7 @@ const questionList = [
   {
     id: 156,
     type: 'judge',
-    title: '在编译阶段，gcc 首先要检查代码的规范性、是否有语法错误等，在检查无误后，gcc把代码翻译为汇编语言。',
+    title: `在编译阶段，gcc 首先要检查代码的规范性、是否有语法错误等，在检查无误后，gcc把代码翻译为汇编语言。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1722,7 +1754,7 @@ const questionList = [
   {
     id: 157,
     type: 'judge',
-    title: '一个API函数通常需要几个系统调用来共同完成函数的功能，但是还有一些API函数不需要调用相应的系统调用。',
+    title: `一个API函数通常需要几个系统调用来共同完成函数的功能，但是还有一些API函数不需要调用相应的系统调用。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1733,7 +1765,7 @@ const questionList = [
   {
     id: 158,
     type: 'judge',
-    title: '可以先创建子进程在创建无名管道（ ）。',
+    title: `可以先创建子进程在创建无名管道（ ）。`,
     img: '',
     options: ['对', '错'],
     answer: 'B',
@@ -1744,7 +1776,7 @@ const questionList = [
   {
     id: 159,
     type: 'judge',
-    title: 'make工程管理器根据时间戳来自动发现更新过的文件从而减少编译的工作量。',
+    title: `make工程管理器根据时间戳来自动发现更新过的文件从而减少编译的工作量。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1755,7 +1787,7 @@ const questionList = [
   {
     id: 160,
     type: 'judge',
-    title: 'Makefile的基本结构是文本文件，其构成为： （ ） 目标体：依赖文件 <‌Tab>‌命令',
+    title: `Makefile的基本结构是文本文件，其构成为： （ ） 目标体：依赖文件 <‌Tab>‌命令`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1766,7 +1798,7 @@ const questionList = [
   {
     id: 161,
     type: 'judge',
-    title: '一般静态库扩展名为.a ，这类的函数库通常扩展名为libxxx.a ;动态函数库的扩展名一般为.so，这类函数库通常名为libxxx.so( )。',
+    title: `一般静态库扩展名为.a ，这类的函数库通常扩展名为libxxx.a ;动态函数库的扩展名一般为.so，这类函数库通常名为libxxx.so( )。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1777,7 +1809,7 @@ const questionList = [
   {
     id: 162,
     type: 'judge',
-    title: '无名管道可以使用在任意进程间通信。',
+    title: `无名管道可以使用在任意进程间通信。`,
     img: '',
     options: ['对', '错'],
     answer: 'B',
@@ -1788,7 +1820,7 @@ const questionList = [
   {
     id: 163,
     type: 'judge',
-    title: '当一个进程终止时，它所有已打开的文件都由内核自动关闭（）。',
+    title: `当一个进程终止时，它所有已打开的文件都由内核自动关闭（）。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1799,7 +1831,7 @@ const questionList = [
   {
     id: 164,
     type: 'judge',
-    title: '标准I/O提供了3种类型缓冲存放：全缓冲、行缓冲、不带缓冲。',
+    title: `标准I/O提供了3种类型缓冲存放：全缓冲、行缓冲、不带缓冲。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1810,7 +1842,7 @@ const questionList = [
   {
     id: 165,
     type: 'judge',
-    title: '当有名管道只有写或者只有读打开时候，open、read、write函数处于阻塞状态，而普通文件不会。',
+    title: `当有名管道只有写或者只有读打开时候，open、read、write函数处于阻塞状态，而普通文件不会。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1821,7 +1853,7 @@ const questionList = [
   {
     id: 166,
     type: 'judge',
-    title: 'Linux操作系统中创建一个新进程的唯一方法是使用fork函数。',
+    title: `Linux操作系统中创建一个新进程的唯一方法是使用fork函数。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',
@@ -1832,7 +1864,7 @@ const questionList = [
   {
     id: 167,
     type: 'judge',
-    title: '有名管道可以保证写管道的原子性。',
+    title: `有名管道可以保证写管道的原子性。`,
     img: '',
     options: ['对', '错'],
     answer: 'A',

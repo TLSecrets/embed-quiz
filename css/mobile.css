@@ -24,7 +24,7 @@
   .eq-dark-toggle, .dark-toggle{bottom:14px;right:14px;width:40px;height:40px}
   .eq-filter-group, .filter-group{flex-wrap:wrap}
   .eq-type-btn, .eq-mode-tab, .filter-btn{padding:4px 10px;font-size:.72rem}
-  .eq-q-title, .q-title{font-size:.88rem}
+  .eq-q-title, .q-title{font-size:.88rem;white-space:pre-wrap}
   .eq-wrong-item, .wrong-item{flex-direction:column;align-items:flex-start;gap:4px}
   .eq-wi-title, .wrong-item .wi-title{white-space:normal}
 }
