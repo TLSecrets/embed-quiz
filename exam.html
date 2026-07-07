@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>刷题 - 嵌入式应用开发</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header" style="padding-bottom:8px;">
+      <h1>📝 刷题</h1>
+      <p class="subtitle" id="subtitle">加载中...</p>
+    </header>
+    <!-- 进度条 + 统计 -->
+    <div class="progress-bar"><div class="fill" id="progFill" style="width:0%"></div></div>
+    <div class="progress-text"><span id="progText">0/0</span><span id="progAcc">正确率: -</span></div>
+    <!-- 工具栏 -->
+    <div class="toolbar">
+      <div class="filter-group" id="filterGroup">
+        <button class="filter-btn active" data-type="all">全部</button>
+        <button class="filter-btn" data-type="radio">单选</button>
+        <button class="filter-btn" data-type="checkbox">多选</button>
+        <button class="filter-btn" data-type="fill">填空</button>
+        <button class="filter-btn" data-type="judge">判断</button>
+      </div>
+      <div class="tool-actions">
+        <label style="font-size:.78rem;">题量 <input type="number" class="inline-input" id="customCount" value="0" min="0" max="167" onchange="setCustomCount()" title="0=全部"></label>
+        <label class="toggle-label">
+          <input type="checkbox" id="randomToggle" onchange="toggleRandom()"> 随机
+        </label>
+        <select id="modeSelect" onchange="switchMode(this.value)" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.78rem;">
+          <option value="normal">常规刷题</option>
+          <option value="review">背题浏览</option>
+          <option value="exam">模拟考试</option>
+          <option value="wrong">错题训练</option>
+        </select>
+        <a href="index.html" class="btn btn-secondary btn-sm">🏠</a>
+      </div>
+    </div>
+    <!-- 答题卡缩略图 -->
+    <div class="sheet-grid" id="sheetGrid"></div>
+    <!-- 题目卡片 -->
+    <div class="q-card" id="qCard">
+      <div class="q-header"><span class="q-badge" id="qBadge">单选题</span><span class="q-id" id="qId">#1</span></div>
+      <div class="q-title" id="qTitle"></div>
+      <div class="q-img-wrap"><img id="qImg" src="" alt="" style="display:none;"></div>
+      <div id="qAnswerArea"></div>
+      <!-- 解析区（常规/背题/错题模式） -->
+      <div class="answer-box" id="answerBox" style="display:none;"></div>
+      <!-- 笔记 + 标签 + 收藏 -->
+      <div id="noteTagArea" style="display:none;">
+        <div class="note-area"><textarea id="noteInput" placeholder="📝 添加个人笔记..." onblur="saveNote()"></textarea></div>
+        <div class="tag-area" id="tagArea"></div>
+      </div>
+    </div>
+    <!-- 导航 -->
+    <div class="nav-row">
+      <button class="btn btn-secondary btn-sm" onclick="prevQ()">⬅ 上一题</button>
+      <button class="btn btn-secondary btn-sm" onclick="nextQ()">下一题 ➡</button>
+      <button class="btn btn-secondary btn-sm" id="btnToggleAns" onclick="toggleAnswer()" style="display:none;">👁 显示答案</button>
+      <button class="btn btn-danger btn-sm" id="btnFinishExam" onclick="finishExam()" style="display:none;">📊 交卷</button>
+      <span class="nav-info" id="navInfo"></span>
+    </div>
+    <footer class="footer"><p>⌨️ 快捷键: 1-4选ABCD, ←→翻题, Enter下一题</p></footer>
+  </div>
+  <!-- 考试完成弹窗 -->
+  <div class="modal-overlay" id="examResultModal" style="display:none;">
+    <div class="modal-box"><h3>📊 考试完成</h3><p id="examResultText"></p><div class="modal-actions">
+      <button class="btn btn-secondary btn-sm" onclick="closeExamResult()">关闭</button>
+      <a href="report.html" class="btn btn-primary btn-sm" id="btnGoReport">查看详细报告</a></div></div>
+  </div>
+  <script src="js/question.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/hotkey.js"></script>
+  <script src="js/darkmode.js"></script>
+  <script>
+    Storage.init(); DarkMode.init(); Hotkey.init();
+    // === State ===
+    let qIndex = 0, qList = [], filterType = 'all', randomMode = false;
+    let currentMode = 'normal', showAnswer = false, examFinished = false;
+    let examStartTime = 0, examResults = null;
+    let userAnswers = {}; // 模拟考试临时答案
+    // === URL Params ===
+    (function() {
+      const p = new URLSearchParams(location.search);
+      if (p.get('type')) filterType = p.get('type');
+      if (p.get('random') === '1') randomMode = true;
+      if (p.get('mode')) currentMode = p.get('mode');
+      document.getElementById('modeSelect').value = currentMode;
+      document.getElementById('randomToggle').checked = randomMode;
+      // 恢复筛选按钮
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.type === filterType));
+      // 恢复进度
+      const saved = Storage.getProgress();
+      if (saved.filterType === filterType && saved.mode === currentMode && saved.index !== undefined && saved.index < 167) {
+        qIndex = saved.index;
+      }
+    })();
+    function buildList() {
+      let list = App.filterQuestions(filterType);
+      if (randomMode) list = App.shuffle(list);
+      const cnt = parseInt(document.getElementById('customCount').value) || 0;
+      if (cnt > 0 && cnt < list.length) list = list.slice(0, cnt);
+      qList = list;
+      if (qIndex >= qList.length) qIndex = 0;
+      if (currentMode === 'wrong') {
+        const wids = Storage.getWrongList();
+        qList = wids.map(id => questionList.find(q => q.id === id)).filter(Boolean);
+        if (randomMode) qList = App.shuffle(qList);
+        if (qList.length === 0) qList = [];
+      }
+    }
+    // === Render ===
+    function render() {
+      if (qList.length === 0) {
+        document.getElementById('qCard').innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>暂无题目</p></div>';
+        return;
+      }
+      const q = qList[qIndex];
+      document.getElementById('subtitle').textContent = App.getTypeName(filterType) + ' · ' + qList.length + '题 · ' + (currentMode === 'exam' ? '模拟考试' : currentMode === 'review' ? '背题浏览' : currentMode === 'wrong' ? '错题训练' : '常规刷题');
+      document.getElementById('qBadge').textContent = App.getTypeName(q.type);
+      document.getElementById('qId').textContent = '#' + q.id;
+      document.getElementById('qTitle').textContent = q.title;
+      App.setImageSrc(document.getElementById('qImg'), q.img);
+      renderAnswerArea(q);
+      renderAnswerBox(q);
+      renderNoteTag(q);
+      updateHighlight(q);
+      document.getElementById('navInfo').textContent = (qIndex + 1) + ' / ' + qList.length;
+      document.getElementById('progFill').style.width = ((qIndex + 1) / qList.length * 100) + '%';
+      updateStats();
+      renderSheet();
+      // 保存进度
+      Storage.saveProgress({ filterType, mode: currentMode, index: qIndex, random: randomMode });
+      // 模式UI调整
+      document.getElementById('btnToggleAns').style.display = currentMode === 'review' ? 'inline-block' : (currentMode === 'normal' || currentMode === 'wrong' ? 'inline-block' : 'none');
+      document.getElementById('btnFinishExam').style.display = currentMode === 'exam' ? 'inline-block' : 'none';
+      document.getElementById('noteTagArea').style.display = (currentMode === 'normal' || currentMode === 'review' || currentMode === 'wrong') ? 'block' : 'none';
+      // 背题/错题模式默认显示答案
+      if (currentMode === 'review') { showAnswer = true; document.getElementById('btnToggleAns').textContent = '🙈 隐藏答案'; }
+      if (currentMode === 'exam') showAnswer = false;
+      if (currentMode === 'wrong' && !showAnswer) document.getElementById('btnToggleAns').textContent = '👁 显示答案';
+    }
+    function renderAnswerArea(q) {
+      const area = document.getElementById('qAnswerArea');
+      const userAns = currentMode === 'exam' ? (userAnswers[q.id] || '') : (Storage.getAnswer(q.id) || '');
+      area.innerHTML = '';
+      switch (q.type) {
+        case 'radio':
+          let rHTML = '<ul class="options-list">';
+          const rl = ['A','B','C','D'];
+          q.options.forEach((o,i) => { rHTML += `<li class="opt-item${userAns===rl[i]?' selected':''}" data-opt="${rl[i]}" onclick="selOpt(this,'${rl[i]}')"><span class="opt-letter">${rl[i]}</span><span class="opt-text">${o}</span></li>`; });
+          area.innerHTML = rHTML + '</ul>'; break;
+        case 'checkbox':
+          const sel = userAns ? userAns.split(',').map(s=>s.trim()) : [];
+          let cHTML = '<ul class="options-list">';
+          const cl = ['A','B','C','D'];
+          q.options.forEach((o,i) => { cHTML += `<li class="opt-item${sel.includes(cl[i])?' selected':''}" data-opt="${cl[i]}" onclick="selChk(this,'${cl[i]}')"><span class="opt-letter">${cl[i]}</span><span class="opt-text">${o}</span></li>`; });
+          area.innerHTML = cHTML + '</ul>'; break;
+        case 'fill':
+          area.innerHTML = `<div class="fill-area"><textarea id="fillInput" onblur="saveFill()" placeholder="请输入答案（多空用、或,分隔）">${userAns||''}</textarea><div class="fill-hint">💡 多空答案请用顿号（、）或逗号（,）分隔</div></div>`; break;
+        case 'judge':
+          area.innerHTML = `<div class="judge-actions">
+            <button class="judge-btn${userAns==='A'?' sel-right':''}" onclick="selJudge('A')">✅ 对（A）</button>
+            <button class="judge-btn${userAns==='B'?' sel-wrong':''}" onclick="selJudge('B')">❌ 错（B）</button></div>`; break;
+      }
+    }
+    function renderAnswerBox(q) {
+      const box = document.getElementById('answerBox');
+      if (!showAnswer && currentMode !== 'review') { box.style.display = 'none'; return; }
+      box.style.display = 'block';
+      const userAns = currentMode === 'exam' ? (userAnswers[q.id] || '') : (Storage.getAnswer(q.id) || '');
+      const correct = userAns ? Storage.checkCorrect(q.id, userAns) : false;
+      box.innerHTML = `<span class="ref">✅ 参考答案：${App.formatAnswer(q)}</span>` +
+        (userAns ? `<br><span class="user">你的答案：${userAns} ${correct ? '✅' : '❌'}</span>` : '<br><span class="user">未作答</span>');
+    }
+    function renderNoteTag(q) {
+      document.getElementById('noteInput').value = q.note || '';
+      const ta = document.getElementById('tagArea');
+      const allTags = Storage.getTags();
+      ta.innerHTML = '';
+      allTags.forEach(t => {
+        const active = q.tags && q.tags.includes(t);
+        ta.innerHTML += `<span class="tag${active?' active':''}" onclick="toggleTag('${t.replace(/'/g,"\\'")}')">${t}</span>`;
+      });
+      ta.innerHTML += `<button class="tag-add-btn" onclick="addCustomTag()">+ 新标签</button>`;
+      ta.innerHTML += `<button class="collect-btn${q.collect?' active':''}" onclick="toggleCollect()" style="margin-left:auto;">${q.collect?'⭐ 已收藏':'☆ 收藏'}</button>`;
+    }
+    function updateHighlight(q) {
+      const card = document.getElementById('qCard');
+      card.classList.remove('correct', 'wrong');
+      if (!showAnswer && currentMode !== 'review') return;
+      const userAns = currentMode === 'exam' ? (userAnswers[q.id] || '') : (Storage.getAnswer(q.id) || '');
+      if (!userAns) return;
+      const correct = Storage.checkCorrect(q.id, userAns);
+      card.classList.add(correct ? 'correct' : 'wrong');
+      // highlight options
+      if (q.type === 'radio' || q.type === 'checkbox') {
+        const refSet = new Set(q.answer.split(',').map(s=>s.trim().toUpperCase()).filter(Boolean));
+        const userSet = new Set(userAns.split(',').map(s=>s.trim().toUpperCase()).filter(Boolean));
+        document.querySelectorAll('.opt-item').forEach(el => {
+          el.classList.remove('correct-opt', 'wrong-opt');
+          const o = el.dataset.opt && el.dataset.opt.toUpperCase();
+          if (refSet.has(o)) el.classList.add('correct-opt');
+          if (userSet.has(o) && !refSet.has(o)) el.classList.add('wrong-opt');
+        });
+      }
+    }
+    function updateStats() {
+      let done = 0, corr = 0, total = qList.length;
+      qList.forEach(q => {
+        const a = currentMode === 'exam' ? (userAnswers[q.id] || '') : Storage.getAnswer(q.id);
+        if (a) { done++; if (Storage.checkCorrect(q.id, a)) corr++; }
+      });
+      document.getElementById('progText').textContent = done + '/' + total + ' 已做';
+      document.getElementById('progAcc').textContent = '正确率: ' + (done > 0 ? ((corr/done)*100).toFixed(1)+'%' : '-');
+    }
+    function renderSheet() {
+      const grid = document.getElementById('sheetGrid');
+      if (qList.length > 100) { grid.style.display = 'none'; return; }
+      grid.style.display = 'flex';
+      grid.innerHTML = '';
+      qList.forEach((q, i) => {
+        let cls = 'sheet-item';
+        const a = currentMode === 'exam' ? (userAnswers[q.id] || '') : Storage.getAnswer(q.id);
+        if (a) cls += Storage.checkCorrect(q.id, a) ? ' done-correct' : ' done-wrong';
+        if (i === qIndex) cls += ' current';
+        grid.innerHTML += `<div class="${cls}" onclick="jumpTo(${i})">${i+1}</div>`;
+      });
+    }
+    // === Actions ===
+    function saveAnswerLocal(val) {
+      const q = qList[qIndex];
+      if (currentMode === 'exam') {
+        userAnswers[q.id] = val;
+      } else {
+        const correct = Storage.submitAnswer(q.id, val);
+        if (currentMode === 'normal' && correct) showAnswer = true;
+        if (currentMode === 'normal') showAnswer = true;
+        if (currentMode === 'wrong') showAnswer = true;
+      }
+      if (showAnswer || currentMode === 'review' || currentMode === 'wrong') render();
+      else { updateStats(); renderSheet(); }
+    }
+    window.selOpt = function(el, opt) {
+      document.querySelectorAll('.opt-item').forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+      saveAnswerLocal(opt);
+    };
+    window.selChk = function(el, opt) {
+      el.classList.toggle('selected');
+      const sels = [];
+      document.querySelectorAll('.opt-item.selected').forEach(e => sels.push(e.dataset.opt));
+      saveAnswerLocal(sels.join(','));
+    };
+    window.saveFill = function() {
+      const v = document.getElementById('fillInput').value.trim();
+      if (v) saveAnswerLocal(v);
+    };
+    window.selJudge = function(opt) { saveAnswerLocal(opt); };
+    window.prevQ = function() { if (qIndex > 0) { qIndex--; render(); } };
+    window.nextQ = function() { if (qIndex < qList.length - 1) { qIndex++; render(); } };
+    window.jumpTo = function(i) { qIndex = i; render(); };
+    window.toggleAnswer = function() {
+      showAnswer = !showAnswer;
+      document.getElementById('btnToggleAns').textContent = showAnswer ? '🙈 隐藏答案' : '👁 显示答案';
+      render();
+    };
+    window.saveNote = function() {
+      const q = qList[qIndex];
+      const v = document.getElementById('noteInput').value.trim();
+      q.note = v;
+    };
+    window.toggleTag = function(tag) {
+      const q = qList[qIndex];
+      if (!q.tags) q.tags = [];
+      const idx = q.tags.indexOf(tag);
+      if (idx >= 0) q.tags.splice(idx, 1);
+      else q.tags.push(tag);
+      renderNoteTag(q);
+    };
+    window.addCustomTag = function() {
+      const tag = prompt('输入新标签名称：');
+      if (tag && tag.trim()) { Storage.addTag(tag.trim()); render(); }
+    };
+    window.toggleCollect = function() {
+      const q = qList[qIndex];
+      q.collect = !q.collect;
+      renderNoteTag(q);
+    };
+    // === Mode switch ===
+    window.switchMode = function(m) {
+      currentMode = m;
+      showAnswer = (m === 'review');
+      userAnswers = {};
+      examFinished = false;
+      document.getElementById('btnToggleAns').textContent = '👁 显示答案';
+      buildList();
+      if (m === 'exam') { examStartTime = Date.now(); }
+      render();
+    };
+    window.toggleRandom = function() {
+      randomMode = document.getElementById('randomToggle').checked;
+      buildList(); render();
+    };
+    window.setCustomCount = function() { buildList(); render(); };
+    // === Filter ===
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        filterType = this.dataset.type;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        buildList(); render();
+      });
+    });
+    // === Exam finish ===
+    window.finishExam = function() {
+      if (!confirm('确定交卷吗？交卷后将无法修改答案。')) return;
+      examFinished = true;
+      const elapsed = Math.round((Date.now() - examStartTime) / 1000);
+      let total = qList.length, correct = 0, wrong = 0;
+      qList.forEach(q => {
+        const ua = userAnswers[q.id] || '';
+        if (Storage.checkCorrect(q.id, ua)) { correct++; Storage.submitAnswer(q.id, ua); }
+        else { wrong++; if (ua) Storage.submitAnswer(q.id, ua); }
+      });
+      const acc = total > 0 ? ((correct/total)*100).toFixed(1) : '0';
+      Storage.addSessionStat(acc);
+      // 存储报告数据
+      const reportData = { total, correct, wrong, accuracy: acc, elapsed, date: new Date().toISOString(), qIds: qList.map(q => q.id), answers: userAnswers, mode: 'exam', filterType };
+      localStorage.setItem('eq_last_report', JSON.stringify(reportData));
+      document.getElementById('examResultText').innerHTML = `总题数：${total}<br>正确：${correct} | 错误：${wrong}<br>正确率：${acc}%<br>耗时：${Math.floor(elapsed/60)}分${elapsed%60}秒`;
+      document.getElementById('examResultModal').style.display = 'flex';
+    };
+    window.closeExamResult = function() { document.getElementById('examResultModal').style.display = 'none'; };
+    // === Hotkey ===
+    Hotkey.registerExam({
+      selectOption(opt) {
+        const q = qList[qIndex];
+        if (q.type === 'radio') { document.querySelectorAll('.opt-item').forEach(e => e.classList.remove('selected')); const el = document.querySelector(`.opt-item[data-opt="${opt}"]`); if (el) { el.classList.add('selected'); saveAnswerLocal(opt); } }
+        else if (q.type === 'checkbox') { const el = document.querySelector(`.opt-item[data-opt="${opt}"]`); if (el) { el.classList.toggle('selected'); const sels = []; document.querySelectorAll('.opt-item.selected').forEach(e => sels.push(e.dataset.opt)); saveAnswerLocal(sels.join(',')); } }
+        else if (q.type === 'judge') saveAnswerLocal(opt);
+      },
+      prev() { window.prevQ(); },
+      next() { window.nextQ(); }
+    });
+    // === Init ===
+    buildList();
+    if (currentMode === 'exam') examStartTime = Date.now();
+    if (currentMode === 'review') showAnswer = true;
+    render();
+  </script>
+</body>
+</html>

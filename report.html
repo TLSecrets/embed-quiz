@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>练习报告 - 嵌入式应用开发</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header"><h1>📊 练习报告</h1><p class="subtitle" id="reportDate"></p></header>
+    <div class="card">
+      <!-- 环形得分图 -->
+      <div class="report-hero">
+        <div class="score-circle"><canvas id="scoreCanvas" width="140" height="140"></canvas><div class="score-value" id="scoreText">-</div></div>
+        <h3 id="scoreLabel">本次得分</h3>
+      </div>
+      <div class="report-stats" id="reportStats"></div>
+    </div>
+    <!-- 错题列表 -->
+    <div class="card" id="wrongSummaryCard" style="display:none;">
+      <h2>❌ 错题汇总</h2>
+      <div id="wrongSummary"></div>
+    </div>
+    <!-- 操作 -->
+    <div class="btn-group mt-12" style="justify-content:center;">
+      <a href="index.html" class="btn btn-secondary">🏠 返回首页</a>
+      <a href="exam.html?type=all" class="btn btn-primary">📝 继续刷题</a>
+      <a href="wrong.html" class="btn btn-danger">📕 错题本</a>
+    </div>
+    <footer class="footer"><p>再接再厉，坚持就是胜利！</p></footer>
+  </div>
+  <script src="js/question.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/darkmode.js"></script>
+  <script>
+    Storage.init(); DarkMode.init();
+    (function() {
+      const raw = localStorage.getItem('eq_last_report');
+      if (!raw) {
+        document.getElementById('scoreText').textContent = '--';
+        document.getElementById('scoreLabel').textContent = '暂无报告数据';
+        return;
+      }
+      const data = JSON.parse(raw);
+      document.getElementById('reportDate').textContent = '日期：' + (data.date || '未知');
+      document.getElementById('scoreText').textContent = data.accuracy + '%';
+      document.getElementById('scoreLabel').textContent = data.mode === 'exam' ? '模拟考试成绩' : '练习得分';
+      const canvas = document.getElementById('scoreCanvas');
+      App.drawScoreRing(canvas, data.correct, data.total);
+      document.getElementById('reportStats').innerHTML = `
+        <div class="stat-item"><div class="stat-num">${data.total}</div><div class="stat-label">总题数</div></div>
+        <div class="stat-item"><div class="stat-num" style="color:var(--success);">${data.correct}</div><div class="stat-label">正确</div></div>
+        <div class="stat-item"><div class="stat-num" style="color:var(--danger);">${data.wrong}</div><div class="stat-label">错误</div></div>
+        <div class="stat-item"><div class="stat-num">${data.accuracy}%</div><div class="stat-label">正确率</div></div>
+        <div class="stat-item"><div class="stat-num">${data.elapsed ? Math.floor(data.elapsed/60)+'m'+data.elapsed%60+'s' : '--'}</div><div class="stat-label">耗时</div></div>
+      `;
+      if (data.qIds && data.answers && data.wrong > 0) {
+        const card = document.getElementById('wrongSummaryCard');
+        card.style.display = 'block';
+        const ws = document.getElementById('wrongSummary');
+        ws.innerHTML = '';
+        data.qIds.forEach(id => {
+          const q = questionList.find(qq => qq.id === id);
+          if (!q) return;
+          const ua = data.answers[id] || '';
+          if (ua && !Storage.checkCorrect(id, ua)) {
+            ws.innerHTML += `<div class="opt-item wrong-opt" style="cursor:default;margin-bottom:6px;">
+              <span class="opt-text"><strong>#${q.id}</strong> ${q.title}<br><small>你的答案：${ua} | 参考答案：${App.formatAnswer(q)}</small></span>
+            </div>`;
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

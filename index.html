@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>嵌入式应用开发 · 刷题系统</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>📚 嵌入式应用开发</h1>
+      <p class="subtitle">2025-2026学年第2学期 · 客观题刷题系统（共167题）</p>
+    </header>
+    <!-- 统计仪表盘 -->
+    <div class="card">
+      <h2>📊 学习仪表盘</h2>
+      <div class="stat-grid" id="statGrid">
+        <div class="stat-item"><div class="stat-num" id="stTotal">167</div><div class="stat-label">总题量</div></div>
+        <div class="stat-item"><div class="stat-num" id="stAnswered">0</div><div class="stat-label">已作答</div></div>
+        <div class="stat-item"><div class="stat-num" id="stCorrect">0</div><div class="stat-label">正确数</div></div>
+        <div class="stat-item"><div class="stat-num" id="stWrong">0</div><div class="stat-label">错题数</div></div>
+        <div class="stat-item"><div class="stat-num" id="stAccuracy">0%</div><div class="stat-label">正确率</div></div>
+        <div class="stat-item"><div class="stat-num" id="stSessions">0</div><div class="stat-label">练习次数</div></div>
+      </div>
+      <!-- 趋势图 -->
+      <h3 style="margin-top:12px;">📈 正确率趋势</h3>
+      <canvas class="trend-chart" id="trendChart" width="600" height="180"></canvas>
+    </div>
+    <!-- 三大模式入口 -->
+    <div class="card">
+      <h2>🚀 快速开始</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;">
+        <a href="exam.html?type=all" class="btn btn-primary btn-block">📝 顺序刷题（全部）</a>
+        <a href="exam.html?type=all&random=1" class="btn btn-primary btn-block">🎲 随机刷题</a>
+        <a href="exam.html?type=all&mode=review" class="btn btn-success btn-block">📖 背题浏览</a>
+        <a href="exam.html?type=all&mode=exam" class="btn btn-danger btn-block">🏁 模拟考试</a>
+        <a href="wrong.html" class="btn btn-secondary btn-block">📕 错题训练 <span id="wrongBadge" class="badge badge-danger" style="display:none;">0</span></a>
+      </div>
+    </div>
+    <!-- 题型入口 -->
+    <div class="card">
+      <h2>📂 分类刷题</h2>
+      <div class="type-grid" id="typeGrid"></div>
+    </div>
+    <!-- 全局设置 -->
+    <div class="card">
+      <h2>⚙️ 全局设置</h2>
+      <div class="setting-row">
+        <label>🌓 深色模式</label>
+        <label class="toggle-sw"><input type="checkbox" id="darkSwitch" onchange="DarkMode.toggle()"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <label>⌨️ 快捷键 (1/2/3/4 + ← → Enter)</label>
+        <label class="toggle-sw"><input type="checkbox" id="hkSwitch" checked onchange="toggleHotkey(this.checked)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <label>🔄 间隔重复强度 (1-10)</label>
+        <input type="range" id="spacedIntensity" min="1" max="10" value="3" onchange="updateSpacedIntensity(this.value)">
+        <span id="intensityLabel">3</span>
+      </div>
+      <div class="setting-row">
+        <label>🎯 复习优先级</label>
+        <select id="reviewPriority" onchange="updateReviewPriority(this.value)">
+          <option value="recent">优先本次练习错题</option>
+          <option value="all">优先全部历史错题</option>
+        </select>
+      </div>
+      <div class="btn-group mt-12">
+        <button class="btn btn-danger btn-sm" onclick="confirmClear('all')">🗑️ 清空所有记录</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmClear('wrong')">🗑️ 仅清空错题</button>
+      </div>
+    </div>
+    <footer class="footer"><p>纯前端 · localStorage 持久化 · 零依赖 · GitHub Pages 部署</p></footer>
+  </div>
+  <!-- 确认弹窗 -->
+  <div class="modal-overlay" id="confirmModal" style="display:none;">
+    <div class="modal-box">
+      <h3 id="confirmTitle">确认操作</h3>
+      <p id="confirmMsg"></p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary btn-sm" onclick="closeModal()">取消</button>
+        <button class="btn btn-danger btn-sm" id="confirmOk" onclick="execClear()">确认清除</button>
+      </div>
+    </div>
+  </div>
+  <script src="js/question.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/darkmode.js"></script>
+  <script>
+    Storage.init(); DarkMode.init();
+    // 同步设置面板
+    (function() {
+      const pref = Storage.getPref();
+      document.getElementById('darkSwitch').checked = pref.darkMode || false;
+      document.getElementById('hkSwitch').checked = pref.hotkeyEnabled !== false;
+      document.getElementById('spacedIntensity').value = pref.spacedIntensity || 3;
+      document.getElementById('intensityLabel').textContent = pref.spacedIntensity || 3;
+      document.getElementById('reviewPriority').value = pref.reviewPriority || 'recent';
+    })();
+    window.toggleHotkey = function(v) { Storage.setPref({ hotkeyEnabled: v }); };
+    window.updateSpacedIntensity = function(v) {
+      document.getElementById('intensityLabel').textContent = v;
+      Storage.setPref({ spacedIntensity: parseInt(v) });
+    };
+    window.updateReviewPriority = function(v) { Storage.setPref({ reviewPriority: v }); };
+    // 确认弹窗
+    let clearTarget = '';
+    window.confirmClear = function(type) {
+      clearTarget = type;
+      const modal = document.getElementById('confirmModal');
+      const title = document.getElementById('confirmTitle');
+      const msg = document.getElementById('confirmMsg');
+      if (type === 'all') {
+        title.textContent = '清空所有记录';
+        msg.textContent = '确定要清空所有作答记录、错题本和统计数据吗？此操作不可恢复！';
+      } else {
+        title.textContent = '清空错题本';
+        msg.textContent = '确定要清空所有错题记录吗？作答记录和统计将保留。';
+      }
+      modal.style.display = 'flex';
+    };
+    window.closeModal = function() { document.getElementById('confirmModal').style.display = 'none'; };
+    window.execClear = function() {
+      if (clearTarget === 'all') { Storage.clearAllAnswers(); Storage.clearAllWrong(); Storage.clearProgress(); }
+      else if (clearTarget === 'wrong') { Storage.clearAllWrong(); }
+      document.getElementById('confirmModal').style.display = 'none';
+      location.reload();
+    };
+    // 统计渲染
+    (function renderDashboard() {
+      let answered = 0, correct = 0;
+      questionList.forEach(q => {
+        const ans = Storage.getAnswer(q.id);
+        if (ans) { answered++; if (Storage.checkCorrect(q.id, ans)) correct++; }
+      });
+      const wrongCount = Storage.getWrongList().length;
+      document.getElementById('stTotal').textContent = questionList.length;
+      document.getElementById('stAnswered').textContent = answered;
+      document.getElementById('stCorrect').textContent = correct;
+      document.getElementById('stWrong').textContent = answered - correct;
+      document.getElementById('stAccuracy').textContent = answered > 0 ? ((correct / answered) * 100).toFixed(1) + '%' : '0%';
+      const stats = Storage.getStats();
+      document.getElementById('stSessions').textContent = stats.totalSessions || 0;
+      const wb = document.getElementById('wrongBadge');
+      if (wrongCount > 0) { wb.style.display = 'inline-block'; wb.textContent = wrongCount; }
+      else wb.style.display = 'none';
+      // 趋势图
+      const canvas = document.getElementById('trendChart');
+      if (stats.accuracyHistory && stats.accuracyHistory.length > 0) {
+        const data = stats.accuracyHistory.map(d => ({ accuracy: d.accuracy }));
+        App.drawTrendChart(canvas, data);
+      }
+      // 题型入口
+      const grid = document.getElementById('typeGrid');
+      const types = ['radio', 'checkbox', 'fill', 'judge'];
+      types.forEach(t => {
+        const qs = questionList.filter(q => q.type === t);
+        let ans = 0, corr = 0;
+        qs.forEach(q => { const a = Storage.getAnswer(q.id); if (a) { ans++; if (Storage.checkCorrect(q.id, a)) corr++; } });
+        const pct = qs.length > 0 ? Math.round((ans / qs.length) * 100) : 0;
+        grid.innerHTML += `<a href="exam.html?type=${t}" class="type-card">
+          <div class="type-icon">${App.getTypeIcon(t)}</div>
+          <div class="type-name">${App.getTypeName(t)}</div>
+          <div class="type-count">${qs.length}题 · 已做${ans} · 对${corr}</div>
+          <div class="type-progress"><div class="fill-bar" style="width:${pct}%"></div></div></a>`;
+      });
+    })();
+  </script>
+</body>
+</html>
