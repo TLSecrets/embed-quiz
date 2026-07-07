@@ -12,160 +12,325 @@
       <h1>📕 错题本</h1>
       <p class="subtitle" id="wrongCount">共 0 道错题</p>
     </header>
-    <!-- 筛选 + 排序 -->
+
+    <!-- 筛选 + 排序 + 操作 -->
     <div class="card">
       <div class="flex-wrap">
         <span style="font-size:.82rem;">筛选：</span>
-        <select id="filterTypeSelect" onchange="renderList()" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.78rem;">
-          <option value="all">全部题型</option><option value="radio">单选</option><option value="checkbox">多选</option><option value="fill">填空</option><option value="judge">判断</option>
+        <select id="filterTypeSelect" onchange="renderList()"
+                style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.78rem;">
+          <option value="all">全部题型</option>
+          <option value="radio">单选</option>
+          <option value="checkbox">多选</option>
+          <option value="fill">填空</option>
+          <option value="judge">判断</option>
         </select>
-        <select id="filterTagSelect" onchange="renderList()" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.78rem;">
-          <option value="all">全部标签</option></select>
-        <label style="font-size:.78rem;margin-left:8px;"><input type="checkbox" id="filterCollect" onchange="renderList()"> 仅收藏</label>
+        <select id="filterTagSelect" onchange="renderList()"
+                style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.78rem;">
+          <option value="all">全部标签</option>
+        </select>
+        <label style="font-size:.78rem;">
+          <input type="checkbox" id="filterCollect" onchange="renderList()"> 仅收藏
+        </label>
+
         <span style="font-size:.82rem;margin-left:12px;">排序：</span>
-        <select id="sortBy" onchange="renderList()" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.78rem;">
-          <option value="count_desc">错误次数↓</option><option value="count_asc">错误次数↑</option><option value="rate_desc">错误率↓</option><option value="rate_asc">错误率↑</option>
+        <select id="sortBy" onchange="renderList()"
+                style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.78rem;">
+          <option value="count_desc">错误次数↓</option>
+          <option value="count_asc">错误次数↑</option>
+          <option value="rate_desc">错误率↓</option>
+          <option value="rate_asc">错误率↑</option>
+          <option value="time_desc">最近错误↓</option>
+          <option value="time_asc">最近错误↑</option>
         </select>
+
         <div style="margin-left:auto;display:flex;gap:6px;">
           <a href="index.html" class="btn btn-secondary btn-sm">🏠 首页</a>
           <a href="exam.html?type=all&mode=wrong" class="btn btn-primary btn-sm">🔁 错题训练</a>
           <button class="btn btn-danger btn-sm" onclick="confirmClearWrong()">🗑️ 清空错题本</button>
         </div>
       </div>
-      <!-- 智能训练控制 -->
+
+      <!-- v2.0: 智能训练双策略（可独立开关） -->
       <div class="flex-wrap mt-8" style="border-top:1px solid var(--border);padding-top:8px;">
         <span style="font-size:.82rem;font-weight:600;">🧠 智能训练策略：</span>
-        <label style="font-size:.78rem;"><input type="checkbox" id="strategyFreq" checked> 错误频次优先</label>
-        <label style="font-size:.78rem;"><input type="checkbox" id="strategySpaced" checked> 艾宾浩斯间隔重复</label>
+        <label style="font-size:.78rem;">
+          <input type="checkbox" id="strategyFreq" checked onchange="saveStrategy()"> 错误频次优先
+        </label>
+        <label style="font-size:.78rem;">
+          <input type="checkbox" id="strategySpaced" checked onchange="saveStrategy()"> 艾宾浩斯间隔重复
+        </label>
         <button class="btn btn-primary btn-sm" onclick="startSmartTraining()">▶ 开始智能训练</button>
+        <span style="font-size:.72rem;color:var(--text2);">（策略可自由组合）</span>
       </div>
     </div>
+
     <!-- 错题列表 -->
     <ul class="wrong-list" id="wrongList"></ul>
-    <div class="empty" id="emptyState" style="display:none;"><div class="empty-icon">🎉</div><p>错题本为空，太棒了！</p></div>
-    <!-- 单题详情弹窗 -->
+    <div class="empty" id="emptyState" style="display:none;">
+      <div class="empty-icon">🎉</div>
+      <p>错题本为空，太棒了！</p>
+    </div>
+
+    <!-- 单题详情弹窗 v2.0 -->
     <div class="modal-overlay" id="detailModal" style="display:none;">
-      <div class="modal-box" style="max-width:500px;max-height:80vh;overflow-y:auto;">
+      <div class="modal-box" style="max-width:560px;max-height:82vh;overflow-y:auto;">
         <h3 id="detailTitle">错题详情</h3>
         <div id="detailContent"></div>
         <div class="modal-actions mt-8">
           <button class="btn btn-secondary btn-sm" onclick="closeDetail()">关闭</button>
-          <button class="btn btn-primary btn-sm" id="detailRedoBtn" onclick="redoFromDetail()">🔁 重做此题</button>
+          <button class="btn btn-primary btn-sm" id="detailRedoBtn">🔁 重做此题</button>
         </div>
       </div>
     </div>
   </div>
+
   <!-- 确认弹窗 -->
   <div class="modal-overlay" id="confirmModal" style="display:none;">
-    <div class="modal-box"><h3>确认清空</h3><p>确定清空所有错题记录吗？此操作不可恢复。</p>
-      <div class="modal-actions"><button class="btn btn-secondary btn-sm" onclick="closeConfirm()">取消</button><button class="btn btn-danger btn-sm" onclick="execClearWrong()">确认</button></div></div>
+    <div class="modal-box">
+      <h3>确认清空</h3>
+      <p>确定清空所有错题记录和间隔重复数据吗？此操作不可恢复。</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary btn-sm" onclick="closeConfirm()">取消</button>
+        <button class="btn btn-danger btn-sm" onclick="execClearWrong()">确认</button>
+      </div>
+    </div>
   </div>
+
   <script src="js/question.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/common.js"></script>
   <script src="js/darkmode.js"></script>
   <script>
-    Storage.init(); DarkMode.init();
-    // 标签筛选下拉
+    Storage.init();
+    DarkMode.init();
+
+    /* ========== 初始化标签下拉 ========== */
     (function() {
       const sel = document.getElementById('filterTagSelect');
-      Storage.getTags().forEach(t => { sel.innerHTML += `<option value="${t}">${t}</option>`; });
+      Storage.getTags().forEach(t => {
+        sel.innerHTML += `<option value="${t}">${t}</option>`;
+      });
+      // 恢复策略开关
+      const pref = Storage.getPref();
+      document.getElementById('strategyFreq').checked = pref.strategyFreq !== false;
+      document.getElementById('strategySpaced').checked = pref.strategySpaced !== false;
     })();
+
+    window.saveStrategy = function() {
+      Storage.setPref({
+        strategyFreq: document.getElementById('strategyFreq').checked,
+        strategySpaced: document.getElementById('strategySpaced').checked
+      });
+    };
+
+    /* ========== 筛选+排序 v2.0 ========== */
     function getFilteredWrongs() {
       let ids = Storage.getWrongList();
       const ft = document.getElementById('filterTypeSelect').value;
       const ftag = document.getElementById('filterTagSelect').value;
       const fcol = document.getElementById('filterCollect').checked;
+
       let qs = ids.map(id => questionList.find(q => q.id === id)).filter(Boolean);
+
+      // 题型筛选
       if (ft !== 'all') qs = qs.filter(q => q.type === ft);
-      if (ftag !== 'all') qs = qs.filter(q => q.tags && q.tags.includes(ftag));
-      if (fcol) qs = qs.filter(q => q.collect);
+
+      // 标签筛选（从元数据读取）
+      if (ftag !== 'all') {
+        qs = qs.filter(q => {
+          const meta = Storage.getQuestionData(q.id);
+          return meta.tags && meta.tags.includes(ftag);
+        });
+      }
+
+      // 收藏筛选
+      if (fcol) {
+        qs = qs.filter(q => {
+          const meta = Storage.getQuestionData(q.id);
+          return meta.collect;
+        });
+      }
+
+      // 排序 v2.0（修复多维排序）
       const sortBy = document.getElementById('sortBy').value;
       const detail = Storage.getWrongDetail();
       qs.sort((a, b) => {
-        const da = detail[a.id] || { wrongCount: 0, wrongRate: 0 };
-        const db = detail[b.id] || { wrongCount: 0, wrongRate: 0 };
-        if (sortBy.startsWith('count')) return sortBy.endsWith('asc') ? da.wrongCount - db.wrongCount : db.wrongCount - da.wrongCount;
-        return sortBy.endsWith('asc') ? da.wrongRate - db.wrongRate : db.wrongRate - da.wrongRate;
+        const da = detail[a.id] || { wrongCount:0, wrongRate:0, lastWrongTime:0 };
+        const db = detail[b.id] || { wrongCount:0, wrongRate:0, lastWrongTime:0 };
+        switch (sortBy) {
+          case 'count_desc': return db.wrongCount - da.wrongCount;
+          case 'count_asc':  return da.wrongCount - db.wrongCount;
+          case 'rate_desc':  return db.wrongRate - da.wrongRate;
+          case 'rate_asc':   return da.wrongRate - db.wrongRate;
+          case 'time_desc':  return (db.lastWrongTime||0) - (da.lastWrongTime||0);
+          case 'time_asc':   return (da.lastWrongTime||0) - (db.lastWrongTime||0);
+          default: return db.wrongCount - da.wrongCount;
+        }
       });
       return qs;
     }
+
+    /* ========== 列表渲染 ========== */
     function renderList() {
       const qs = getFilteredWrongs();
       document.getElementById('wrongCount').textContent = '共 ' + qs.length + ' 道错题';
       const listEl = document.getElementById('wrongList');
       const emptyEl = document.getElementById('emptyState');
-      if (qs.length === 0) { listEl.innerHTML = ''; emptyEl.style.display = 'block'; return; }
+
+      if (qs.length === 0) {
+        listEl.innerHTML = '';
+        emptyEl.style.display = 'block';
+        return;
+      }
       emptyEl.style.display = 'none';
+
       const detail = Storage.getWrongDetail();
       listEl.innerHTML = qs.map(q => {
-        const d = detail[q.id] || { wrongCount: 0, wrongRate: 0 };
+        const d = detail[q.id] || { wrongCount:0, wrongRate:0, totalAttempts:0 };
+        const meta = Storage.getQuestionData(q.id);
+        const tagsHTML = (meta.tags && meta.tags.length > 0)
+          ? meta.tags.map(t => `<span class="badge badge-primary" style="margin:0 2px;font-size:.62rem;">${t}</span>`).join('')
+          : '';
+        const collectIcon = meta.collect ? '⭐' : '';
         return `<li class="wrong-item" onclick="openDetail(${q.id})">
-          <span class="wi-id">#${q.id}</span>
+          <span class="wi-id">#${q.id}${collectIcon}</span>
           <span class="wi-badge wrong-num">${App.getTypeName(q.type)}</span>
           <span class="wi-title">${q.title}</span>
-          <span class="wi-stats">错${d.wrongCount}次 | ${d.wrongRate ? (d.wrongRate*100).toFixed(0)+'%' : '0%'}</span>
-          <span style="font-size:.72rem;">▶</span></li>`;
+          <span class="wi-tags">${tagsHTML}</span>
+          <span class="wi-stats">错${d.wrongCount}次 · 共${d.totalAttempts||0}次 · ${d.wrongRate ? (d.wrongRate*100).toFixed(0)+'%' : '0%'}</span>
+          <span style="font-size:.72rem;">▶</span>
+        </li>`;
       }).join('');
     }
+
+    /* ========== 详情弹窗 v2.0 ========== */
     let detailQid = null;
     window.openDetail = function(id) {
       detailQid = id;
       const q = questionList.find(qq => qq.id === id);
       if (!q) return;
-      document.getElementById('detailTitle').textContent = '#' + id + ' ' + App.getTypeName(q.type);
+
+      document.getElementById('detailTitle').textContent =
+        '#' + id + ' ' + App.getTypeName(q.type);
+
       const detail = Storage.getWrongDetail();
-      const d = detail[id] || { totalAttempts: 0, wrongCount: 0, wrongRate: 0 };
+      const d = detail[id] || { totalAttempts:0, wrongCount:0, wrongRate:0 };
       const optStats = Storage.getOptionStats(id);
+      const meta = Storage.getQuestionData(id);
+
+      // 选项统计
       let optHTML = '';
       if (q.options && q.options.length > 0) {
         const labels = ['A','B','C','D'];
-        optHTML = '<p style="margin-top:8px;font-weight:600;">各选项选择次数：</p>';
+        optHTML = '<p style="margin-top:8px;font-weight:600;">📊 各选项被选次数：</p>';
         q.options.forEach((o, i) => {
-          optHTML += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);"><span>${labels[i]}. ${o}</span><span class="badge badge-primary">${optStats[labels[i]] || 0}次</span></div>`;
+          const cnt = optStats[labels[i]] || 0;
+          optHTML += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);">
+            <span>${labels[i]}. ${o}</span>
+            <span class="badge badge-primary">${cnt}次</span>
+          </div>`;
         });
       }
+
+      // 标签
+      const tagsHTML = (meta.tags && meta.tags.length > 0)
+        ? meta.tags.map(t => `<span class="badge badge-primary">${t}</span>`).join(' ')
+        : '<span style="color:var(--text2);">无</span>';
+
       document.getElementById('detailContent').innerHTML = `
-        <p><strong>题目：</strong>${q.title}</p>
-        <p><strong>参考答案：</strong>${App.formatAnswer(q)}</p>
-        <p><strong>总作答：</strong>${d.totalAttempts || 0}次 | <strong>错误：</strong>${d.wrongCount || 0}次 | <strong>错误率：</strong>${d.wrongRate ? (d.wrongRate*100).toFixed(1)+'%' : '0%'}</p>
+        <p><strong>📝 题目：</strong>${q.title}</p>
+        <p><strong>✅ 参考答案：</strong>${App.formatAnswer(q)}</p>
+        <p><strong>📈 总作答：</strong>${d.totalAttempts||0}次 &nbsp;|&nbsp;
+           <strong>❌ 错误：</strong>${d.wrongCount||0}次 &nbsp;|&nbsp;
+           <strong>📉 错误率：</strong>${d.wrongRate ? (d.wrongRate*100).toFixed(1)+'%' : '0%'}</p>
+        <p><strong>🏷️ 标签：</strong>${tagsHTML} &nbsp; ${meta.collect?'⭐ 已收藏':''}</p>
+        <p><strong>📝 笔记：</strong>${meta.note || '<span style="color:var(--text2);">暂无</span>'}</p>
         ${optHTML}`;
-      document.getElementById('detailRedoBtn').onclick = function() { 
-        closeDetail(); 
-        const progress = { filterType: 'all', mode: 'wrong', index: 0, random: false };
-        Storage.saveProgress(progress);
-        window.location.href = 'exam.html?type=all&mode=wrong'; 
+
+      document.getElementById('detailRedoBtn').onclick = function() {
+        closeDetail();
+        window.location.href = 'exam.html?type=all&mode=wrong';
       };
+
       document.getElementById('detailModal').style.display = 'flex';
     };
-    window.closeDetail = function() { document.getElementById('detailModal').style.display = 'none'; };
-    window.redoFromDetail = function() { document.getElementById('detailRedoBtn').click(); };
-    window.confirmClearWrong = function() { document.getElementById('confirmModal').style.display = 'flex'; };
-    window.closeConfirm = function() { document.getElementById('confirmModal').style.display = 'none'; };
-    window.execClearWrong = function() { Storage.clearAllWrong(); document.getElementById('confirmModal').style.display = 'none'; renderList(); };
-    // 智能训练
+
+    window.closeDetail = function() {
+      document.getElementById('detailModal').style.display = 'none';
+    };
+
+    /* ========== 确认弹窗 ========== */
+    window.confirmClearWrong = function() {
+      document.getElementById('confirmModal').style.display = 'flex';
+    };
+    window.closeConfirm = function() {
+      document.getElementById('confirmModal').style.display = 'none';
+    };
+    window.execClearWrong = function() {
+      Storage.clearAllWrong();
+      localStorage.removeItem('eq_spaced_repeat');
+      document.getElementById('confirmModal').style.display = 'none';
+      renderList();
+    };
+
+    /* ========== 智能训练 v2.0（双策略独立组合） ========== */
     window.startSmartTraining = function() {
       const useFreq = document.getElementById('strategyFreq').checked;
       const useSpaced = document.getElementById('strategySpaced').checked;
+
+      if (!useFreq && !useSpaced) {
+        alert('请至少选择一种训练策略！');
+        return;
+      }
+
       let wids = Storage.getWrongList();
-      if (wids.length === 0) { alert('没有错题可训练！'); return; }
-      let trainingIds = [];
-      if (useFreq) {
-        trainingIds = App.getFreqSortedWrongs(wids, 'count', 'desc');
+      if (wids.length === 0) {
+        alert('没有错题可训练！');
+        return;
       }
-      if (useSpaced) {
+
+      // 应用当前筛选
+      let filteredQs = getFilteredWrongs();
+      let trainingIds = filteredQs.map(q => q.id);
+
+      // 策略1: 频次优先排序
+      if (useFreq && !useSpaced) {
+        trainingIds = App.getFreqSortedWrongs(trainingIds, 'count', 'desc').map(id => id);
+      }
+
+      // 策略2: 间隔重复优先
+      if (useSpaced && !useFreq) {
         const pref = Storage.getPref();
-        const spacedIds = App.getSpacedQuestions(wids, pref.spacedIntensity || 3);
-        trainingIds = [...new Set([...trainingIds, ...spacedIds])];
+        const intensity = pref.spacedIntensity || 3;
+        const typeFilter = document.getElementById('filterTypeSelect').value;
+        const spaced = App.getSpacedQuestions(trainingIds, intensity, typeFilter === 'all' ? null : typeFilter);
+        trainingIds = spaced;
       }
-      if (!useFreq && !useSpaced) { trainingIds = wids; }
-      if (trainingIds.length === 0) { alert('当前无需复习的错题！'); return; }
-      // 通过sessionStorage传递训练题号
+
+      // 两种同时开启：合并
+      if (useFreq && useSpaced) {
+        const freqSorted = App.getFreqSortedWrongs(trainingIds, 'count', 'desc');
+        const pref = Storage.getPref();
+        const typeFilter = document.getElementById('filterTypeSelect').value;
+        const spaced = App.getSpacedQuestions(trainingIds, pref.spacedIntensity||3, typeFilter==='all'?null:typeFilter);
+        // 频次排序的在前，间隔重复的在后面补充
+        const comb = [...new Set([...freqSorted, ...spaced])];
+        trainingIds = comb;
+      }
+
+      if (trainingIds.length === 0) {
+        alert('当前条件筛选下没有需要训练的错题！');
+        return;
+      }
+
+      // 存储训练ID列表
       sessionStorage.setItem('eq_smart_training', JSON.stringify(trainingIds.slice(0, 50)));
-      const progress = { filterType: 'all', mode: 'wrong', index: 0, random: false };
-      Storage.saveProgress(progress);
+      Storage.saveProgress({ filterType:'all', mode:'wrong', index:0, random:false });
       window.location.href = 'exam.html?type=all&mode=wrong';
     };
+
+    /* ========== 初始渲染 ========== */
     renderList();
   </script>
 </body>

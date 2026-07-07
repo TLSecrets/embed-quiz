@@ -184,6 +184,21 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
   .opt-item{padding:8px 10px}
   .q-title{font-size:.9rem}
 }
+
+/* ===== v2.0 新增样式 ===== */
+.tag-active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); font-weight: 600; }
+.tag-add { background: var(--success-bg); border-color: var(--success-border); color: var(--success); cursor: pointer; }
+.tag-star { background: #fff3cd; border-color: #e09f3e; color: #e09f3e; font-weight: 600; }
+.btn-warn { background: var(--warn); color: #fff; } .btn-warn:hover { opacity: .85; }
+.wi-tags { display: flex; gap: 2px; flex-wrap: wrap; min-width: 0; }
+.tool-actions .toggle-label { display: flex; align-items: center; gap: 4px; font-size: .78rem; cursor: pointer; }
+.tool-actions select { padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--text); font-size: .78rem; }
+/* 进度详情 */
+.progress-text { display: flex; gap: 12px; flex-wrap: wrap; font-size: .8rem; color: var(--text2); margin-bottom: 8px; }
+.progress-text span { white-space: nowrap; }
+/* 间隔重复面板 */
+#spacedPanel .flex-wrap label { display: flex; align-items: center; gap: 4px; }
+
 @media(max-width:380px){
   .stat-grid{grid-template-columns:repeat(3,1fr)}
   .type-grid{grid-template-columns:1fr}
