@@ -37,6 +37,11 @@
         if (target) { target.classList.add('active'); }
       }
     })();
+    const urlMode = (function() {
+      const p = new URLSearchParams(window.location.search);
+      return p.get('mode') || '';
+    })();
+    window._PAGE_MODE = urlMode || '';
     modeConfig = {
       normal:   { answerAfter: true,  random: true,  limit: 0    },
       review:   { answerAfter: false, random: false, limit: 0    },
@@ -46,6 +51,15 @@
     bindEvents();
     applyMode('normal');
     restoreProgressOrStart();
+    // 错题/收藏模式：显示返回按钮
+    if (window._PAGE_MODE === 'wrong') {
+      const btn = document.getElementById('eqBtnBackWrong');
+      if (btn) { btn.style.display = 'inline-block'; btn.href = 'wrong.html'; }
+    }
+    if (window._PAGE_MODE === 'collect') {
+      const btn = document.getElementById('eqBtnBackCollect');
+      if (btn) { btn.style.display = 'inline-block'; btn.href = 'collect.html'; }
+    }
   }
   // ============ 加载题库 ============
   function loadQuestions() {
@@ -89,6 +103,27 @@
   function rebuildQList(cfg) {
     const filterType = getActiveFilter();
     let source = App.filterQuestions(filterType, questionList);
+    // 错题模式：仅保留存在错误记录的题目
+    if (window._PAGE_MODE === 'wrong') {
+      const wrongIds = Storage.getWrongList();
+      const wrongIdSet = new Set(wrongIds);
+      source = source.filter(q => wrongIdSet.has(q.id));
+      console.log('[rebuildQList] 错题模式：' + wrongIds.length + '个错题ID→匹配' + source.length + '道');
+      if (source.length === 0) {
+        alert(I18N.t('noWrongTips') || '暂无错题，先去刷题吧！');
+        window.location.href = 'index.html';
+        qList = [];
+        return;
+      }
+    }
+    // 收藏模式：仅保留 collect=true 的题目
+    if (window._PAGE_MODE === 'collect') {
+      source = source.filter(q => {
+        const meta = Storage.getQuestionData(q.id);
+        return meta && meta.collect === true;
+      });
+      console.log('[rebuildQList] 收藏模式：' + source.length + ' 道收藏题目');
+    }
     qList = Picker.build(source, cfg.random, cfg.limit, filterType);
     if (filterType !== 'all' && qList.length > 0) {
       const mismatch = qList.filter(q => q.type !== filterType);
@@ -407,6 +442,7 @@
     isExamSubmitted = true;
     sessionResults = {
       mode: 'exam',
+      _pageMode: window._PAGE_MODE || '',
       total: total,
       done: done,
       correct: correct,

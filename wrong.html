@@ -46,7 +46,7 @@
 
         <div style="margin-left:auto;display:flex;gap:6px;">
           <a href="index.html" class="btn btn-secondary btn-sm">🏠 <span data-i18n="backHome">首页</span></a>
-          <a href="exam.html?type=all&mode=wrong" class="btn btn-primary btn-sm">🔁 <span data-i18n="wrongTraining">错题训练</span></a>
+          <a href="exam.html?type=all" class="btn btn-primary btn-sm" id="btnWrongTraining">🔁 <span data-i18n="wrongTraining">错题训练</span></a>
           <button class="btn btn-danger btn-sm" onclick="confirmClearWrong()">🗑️ <span data-i18n="clearWrongOnly">清空错题本</span></button>
         </div>
       </div>
@@ -254,5 +254,20 @@
     /* ========== 初始渲染 ========== */
     renderList();
   </script>
+<script>
+  // 动态设置错题训练链接带上 mode=wrong
+  (function() {
+    const btn = document.getElementById('btnWrongTraining');
+    if (btn) {
+      const type = document.getElementById('filterTypeSelect')?.value || 'all';
+      btn.href = 'exam.html?type=' + encodeURIComponent(type) + '&mode=wrong';
+      // 当筛选器变化时更新链接
+      const sel = document.getElementById('filterTypeSelect');
+      if (sel) sel.addEventListener('change', function() {
+        btn.href = 'exam.html?type=' + encodeURIComponent(this.value) + '&mode=wrong';
+      });
+    }
+  })();
+</script>
 </body>
 </html>

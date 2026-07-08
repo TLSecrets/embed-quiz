@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的收藏 - 嵌入式应用开发</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/mobile.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1 data-i18n="collectBook">⭐ 我的收藏</h1>
+      <p class="subtitle" id="collectCount">共 0 道收藏题目</p>
+      <a href="index.html" class="btn btn-secondary btn-sm" style="margin-top:8px;">🏠 返回首页</a>
+    </header>
+    <!-- 筛选栏 -->
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0;">
+      <span style="font-size:.82rem;" data-i18n="filterByType">筛选：</span>
+      <select id="filterTypeSelect" onchange="renderList()" style="padding:4px 8px;border-radius:6px;">
+        <option value="all">全部题型</option>
+        <option value="radio">📻 单选题</option>
+        <option value="checkbox">✅ 多选题</option>
+        <option value="fill">✏️ 填空题</option>
+        <option value="judge">⚖️ 判断题</option>
+      </select>
+      <label style="margin-left:8px;font-size:.8rem;">
+        <input type="checkbox" id="filterTagged" onchange="renderList()"> <span data-i18n="onlyTagged">仅标签</span>
+      </label>
+      <div style="flex:1;"></div>
+      <a href="exam.html?type=all&mode=collect" class="btn btn-primary btn-sm" id="btnCollectTraining">🔁 <span data-i18n="collectTraining">收藏刷题</span></a>
+    </div>
+    <!-- 收藏列表 -->
+    <ul class="wrong-list" id="collectList"></ul>
+    <p style="text-align:center;color:var(--text2);padding:40px 0;" data-i18n="collectEmpty" id="collectEmpty">暂无收藏题目，去刷题页面点击⭐收藏吧！</p>
+  </div>
+  <script src="js/question.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/darkmode.js"></script>
+  <script>
+    Storage.init();
+    I18N.applyToDOM();
+    function getFilteredCollects() {
+      const ft = document.getElementById('filterTypeSelect').value;
+      const ftagged = document.getElementById('filterTagged').checked;
+      let qs = questionList.filter(function(q) {
+        var meta = Storage.getQuestionData(q.id);
+        return meta && meta.collect === true;
+      });
+      if (ft !== 'all') qs = qs.filter(function(q) { return q.type === ft; });
+      if (ftagged) qs = qs.filter(function(q) {
+        var meta = Storage.getQuestionData(q.id);
+        return meta && meta.tags && meta.tags.length > 0;
+      });
+      return qs;
+    }
+    function renderList() {
+      var qs = getFilteredCollects();
+      document.getElementById('collectCount').textContent = '共 ' + qs.length + ' 道收藏题目';
+      var listEl = document.getElementById('collectList');
+      var emptyEl = document.getElementById('collectEmpty');
+      if (qs.length === 0) {
+        listEl.innerHTML = '';
+        emptyEl.style.display = 'block';
+      } else {
+        emptyEl.style.display = 'none';
+        listEl.innerHTML = qs.map(function(q) {
+          var meta = Storage.getQuestionData(q.id);
+          var tagsHTML = (meta.tags || []).slice(0,3).map(function(t) { return '<span class="eq-tag">#'+Renderer._escHtml(t)+'</span>'; }).join('');
+          return '<li class="wrong-item" onclick="openCollect('+q.id+')">' +
+            '<span class="wi-id">⭐ #'+q.id+'</span>' +
+            '<span class="wi-badge wrong-num">'+App.getTypeName(q.type)+'</span>' +
+            '<span class="wi-title" style="white-space:pre-wrap">'+Renderer._escHtml(q.title).substring(0,80)+'</span>' +
+            '<span class="wi-stats">'+tagsHTML+'</span>' +
+            '</li>';
+        }).join('');
+      }
+      var btn = document.getElementById('btnCollectTraining');
+      if (btn) {
+        var type = document.getElementById('filterTypeSelect').value;
+        btn.href = 'exam.html?type='+encodeURIComponent(type)+'&mode=collect';
+      }
+    }
+    window.openCollect = function(id) {
+      window.location.href = 'exam.html?mode=collect#q'+id;
+    };
+    renderList();
+  </script>
+</body>
+</html>

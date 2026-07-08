@@ -81,5 +81,22 @@
       }
     })();
   </script>
+<script>
+    // Mode-aware navigation
+    (function() {
+      const raw = localStorage.getItem('eq_last_report');
+      if (!raw) return;
+      try {
+        const data = JSON.parse(raw);
+        if (data._pageMode === 'wrong') {
+          const btn = document.getElementById('backToWrongBtn');
+          if (btn) { btn.style.display = 'inline-block'; btn.href = 'wrong.html'; }
+        } else if (data._pageMode === 'collect') {
+          const btn = document.getElementById('backToCollectBtn');
+          if (btn) { btn.style.display = 'inline-block'; btn.href = 'collect.html'; }
+        }
+      } catch(e) {}
+    })();
+  </script>
 </body>
 </html>

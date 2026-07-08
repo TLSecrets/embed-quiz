@@ -230,7 +230,12 @@ const I18N = {
       loading: 'Loading...',
       errorLoadQbank: 'Failed to load question bank. Please refresh.',
       errorStorage: 'Local storage error. Data may not be saved properly.',
-    }
+    'collectBook': '⭐ 我的收藏',
+    'collectTraining': '收藏刷题',
+    'collectEmpty': '暂无收藏题目，去刷题页面点击⭐收藏吧！',
+    'collectPage': '📂 收藏夹',
+    'noWrongTips': '暂无错题，先去刷题吧！',
+  }
   },
   /**
    * 扫描 DOM 中所有 [data-i18n] 元素并替换文本内容
